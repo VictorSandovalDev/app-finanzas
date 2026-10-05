@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Viaje Financiero",
+    "slug": "app-finanzas",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#F6F1E7",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "co.viajefinanciero.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "Viaje Financiero",
+      "themeColor": "#2F4A3D",
+      "backgroundColor": "#F6F1E7"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-font",
+      "expo-audio"
+    ],
+    "scheme": "viajefinanciero",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
