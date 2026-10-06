@@ -20,7 +20,7 @@ npm run typecheck
 ## Estructura
 
 - `src/app/` — pantallas (un archivo por ruta)
-  - `bienvenida` onboarding · `(main)/viaje` dashboard + mapa · `(main)/entregables` · `(main)/perfil` pasaporte financiero
+  - `bienvenida` onboarding · pestañas `(main)/viaje` inicio · `(main)/mapa` · `(main)/mentor` · `(main)/perfil` pasaporte
   - `nivel/[id]` nivel bloqueado / activo / próximamente · `nivel/[id]/desbloquear` compra
   - `mision/*` misiones de los niveles 1–3 · `logro/[id]` misión completada
 - `src/data/` — niveles, precios y contenido educativo
