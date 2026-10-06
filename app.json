@@ -37,7 +37,8 @@
       "expo-router",
       "expo-status-bar",
       "expo-font",
-      "expo-audio"
+      "expo-audio",
+      "expo-asset"
     ],
     "scheme": "viajefinanciero",
     "experiments": {
