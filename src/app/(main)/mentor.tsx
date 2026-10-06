@@ -21,7 +21,6 @@ export default function Mentor() {
   const { state } = useJourney();
   const current = getCurrentLevel(state);
   const mission = getNextMission(state);
-  const chatStarted = state.level1.messages.some((m) => m.from === 'user');
 
   const tip = mission
     ? TIPS[mission.id]
@@ -50,7 +49,7 @@ export default function Mentor() {
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.title}>¿Por qué estás aquí?</Text>
               <T variant="small">
-                Estación 1 · {state.level1.map ? 'Completada' : chatStarted ? 'En curso' : 'Sin empezar'}
+                Estación 1 · {state.level1.map ? 'Mapa Personal listo' : 'Conversación con Victor'}
               </T>
             </View>
             <Icon name="caretRight" size={16} color={colors.muted} />

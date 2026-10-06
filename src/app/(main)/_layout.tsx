@@ -1,11 +1,18 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
+import { useEffect } from 'react';
 import { useWindowDimensions } from 'react-native';
 
 import { TabBar } from '@/components/TabBar';
+import { useAuth } from '@/state/auth';
+import { useTransformation } from '@/state/conversation';
+import { useJourney } from '@/state/journey';
 import { colors } from '@/theme/tokens';
 
 export default function MainLayout() {
   const vertical = useWindowDimensions().width >= 1024;
+  const { session } = useAuth();
+  useMentorDeliverables(session?.user.id);
+  if (!session) return <Redirect href="/bienvenida" />;
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} vertical={vertical} />}
@@ -25,4 +32,17 @@ export default function MainLayout() {
       <Tabs.Screen name="logro" options={{ href: null }} />
     </Tabs>
   );
+}
+
+/** When the mentor publishes the Personal Map and phrases, they land in the member's journey. */
+function useMentorDeliverables(memberId: string | undefined) {
+  const row = useTransformation(memberId);
+  const { update } = useJourney();
+  useEffect(() => {
+    if (!row?.published_at) return;
+    update((s) => {
+      if (s.level1.map && JSON.stringify(s.level1.map) === JSON.stringify(row.map) && JSON.stringify(s.level1.mantras) === JSON.stringify(row.mantras)) return s;
+      return { ...s, level1: { ...s.level1, map: row.map, mantras: row.mantras } };
+    });
+  }, [row, update]);
 }

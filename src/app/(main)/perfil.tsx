@@ -3,12 +3,14 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Button, Divider, Emblem, Progress, Screen, SectionTitle, T } from '@/components/ui';
 import { LEVELS } from '@/data/levels';
+import { useAuth } from '@/state/auth';
 import { useJourney } from '@/state/journey';
 import { getCurrentLevel, getDeliverables, getMissions, getStreak, getTotalXp } from '@/state/missions';
 import { colors, fonts } from '@/theme/tokens';
 
 export default function Passport() {
-  const { state, reset } = useJourney();
+  const { state } = useJourney();
+  const { signOut, session } = useAuth();
   const current = getCurrentLevel(state);
   const since = state.joinedAt ? new Date(state.joinedAt).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }) : undefined;
 
@@ -18,8 +20,8 @@ export default function Passport() {
     { value: getDeliverables(state).filter((d) => d.ready).length, label: 'entregables' },
   ];
 
-  const restart = () => {
-    reset();
+  const leave = async () => {
+    await signOut();
     router.replace('/bienvenida');
   };
 
@@ -84,7 +86,10 @@ export default function Passport() {
         <Divider />
       </View>
 
-      <Button label="Reiniciar viaje (demo)" variant="quiet" onPress={restart} />
+      <View style={{ gap: 4 }}>
+        <T variant="small" style={{ textAlign: 'center' }}>{session?.user.email}</T>
+        <Button label="Cerrar sesión" variant="quiet" onPress={leave} />
+      </View>
     </Screen>
   );
 }

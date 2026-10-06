@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { LevelId } from '@/data/levels';
+import { supabase } from '@/services/supabase';
 
 export type ChatMessage = {
   id: string;
@@ -87,23 +88,58 @@ type JourneyContextValue = {
 
 const JourneyContext = createContext<JourneyContextValue | null>(null);
 
-export function JourneyProvider({ children }: { children: ReactNode }) {
+/** Fields that never leave the device (local chat drafts, audio file URIs). */
+function forServer(s: JourneyState) {
+  return { ...s, level1: { ...s.level1, messages: [] } };
+}
+
+/**
+ * Journey progress for the signed-in member. Cached on the device and synced to
+ * `journeys.state` in Supabase, so it follows the account across devices.
+ */
+export function JourneyProvider({ children, userId }: { children: ReactNode; userId?: string }) {
   const [state, setState] = useState<JourneyState>(initialState);
-  const [hydrated, setHydrated] = useState(false);
+  const key = userId ? `${STORAGE_KEY}/${userId}` : STORAGE_KEY;
+  const [hydratedKey, setHydratedKey] = useState<string | null>(null);
+  const hydrated = hydratedKey === key;
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
-        if (raw) setState({ ...initialState, ...JSON.parse(raw) });
-      })
-      .catch(() => {})
-      .finally(() => setHydrated(true));
-  }, []);
+    let cancelled = false;
+    (async () => {
+      let next = initialState;
+      try {
+        const raw = await AsyncStorage.getItem(key);
+        if (raw) next = { ...initialState, ...JSON.parse(raw) };
+      } catch {}
+      if (userId) {
+        const { data } = await supabase.from('journeys').select('state').eq('user_id', userId).maybeSingle();
+        const remote = data?.state as Partial<JourneyState> | undefined;
+        // The server copy wins once it has content; the local cache only fills an empty account.
+        if (remote && Object.keys(remote).length > 0) next = { ...initialState, ...remote, level1: { ...initialState.level1, ...remote.level1 } };
+      }
+      if (!cancelled) {
+        setState(next);
+        setHydratedKey(key);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [key, userId]);
 
   useEffect(() => {
     if (!hydrated) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
-  }, [state, hydrated]);
+    AsyncStorage.setItem(key, JSON.stringify(state)).catch(() => {});
+    if (!userId) return;
+    const t = setTimeout(() => {
+      supabase
+        .from('journeys')
+        .update({ state: forServer(state), updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .then(() => {});
+    }, 800);
+    return () => clearTimeout(t);
+  }, [state, hydrated, key, userId]);
 
   /** Every change counts as activity for today's streak. */
   const update = useCallback((fn: (s: JourneyState) => JourneyState) => setState((s) => withActivity(fn(s))), []);
