@@ -170,13 +170,9 @@ function Path({ level, state, isCurrent, offset }: { level: Level; state: Journe
   }
 
   // Trail points: from the banner above, through every stop, down to the next banner.
-  let y = 0;
-  const points = stops.map((st) => {
-    const point = { x: st.x, y: y + st.center, reached: st.reached };
-    y += st.h + GAP;
-    return point;
-  });
-  const total = y - GAP;
+  const tops = stops.map((_, i) => stops.slice(0, i).reduce((sum, st) => sum + st.h + GAP, 0));
+  const points = stops.map((st, i) => ({ x: st.x, y: tops[i] + st.center, reached: st.reached }));
+  const total = stops.reduce((sum, st) => sum + st.h + GAP, 0) - GAP;
   const pad = 18;
   const top = { x: 0, y: -pad, reached: unlocked };
   const bottom = { x: 0, y: total + pad, reached: completed };

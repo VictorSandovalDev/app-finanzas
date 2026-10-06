@@ -11,6 +11,12 @@ npm run android   # requiere Expo Go o un emulador
 npm run typecheck
 ```
 
+## Despliegue
+
+- **Web (Vercel):** `vercel.json` exporta la app con `npx expo export --platform web` y sirve `dist/` como SPA.
+- **APK de Android (EAS Build):** `npx eas-cli@latest build -p android --profile preview` genera un APK instalable.
+  Para Google Play: `--profile production` (genera un AAB).
+
 ## Estructura
 
 - `src/app/` — pantallas (un archivo por ruta)
