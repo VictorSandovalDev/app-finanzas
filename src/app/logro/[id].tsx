@@ -1,157 +1,104 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon } from '@/components/Icon';
-import { Seal } from '@/components/Seal';
-import { Button, Card, Screen, T } from '@/components/ui';
+import { Pop, stepped, useOnce } from '@/components/motion';
+import { Particles } from '@/components/Particles';
+import { Sprite, SpriteName } from '@/components/Sprite';
+import { ChunkyButton, GameLabel } from '@/components/ui';
 import { formatCOP, getLevel } from '@/data/levels';
 import { useJourney } from '@/state/journey';
-import { colors, space, useNativeDriver } from '@/theme/tokens';
-
-const PARTICLES = [
-  { x: -120, delay: 0, size: 6 },
-  { x: -70, delay: 500, size: 4 },
-  { x: -20, delay: 900, size: 5 },
-  { x: 40, delay: 250, size: 4 },
-  { x: 90, delay: 700, size: 6 },
-  { x: 130, delay: 1100, size: 4 },
-];
+import { getStreak, STATION_XP } from '@/state/missions';
+import { colors, fonts } from '@/theme/tokens';
 
 export default function AchievementScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { state } = useJourney();
+  const insets = useSafeAreaInsets();
   const level = getLevel(Number(id));
-  const scale = useRef(new Animated.Value(0.3)).current;
-  const spin = useRef(new Animated.Value(0)).current;
-  const text = useRef(new Animated.Value(0)).current;
-  const particles = useRef(PARTICLES.map(() => new Animated.Value(0))).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scale, { toValue: 1, friction: 4, tension: 50, useNativeDriver }),
-      Animated.timing(text, { toValue: 1, duration: 700, delay: 600, useNativeDriver }),
-    ]).start();
-    const rotation = Animated.loop(Animated.timing(spin, { toValue: 1, duration: 24000, easing: Easing.linear, useNativeDriver }));
-    rotation.start();
-    const floats = particles.map((p, i) =>
-      Animated.loop(
-        Animated.sequence([
-          Animated.delay(PARTICLES[i].delay),
-          Animated.timing(p, { toValue: 1, duration: 3200, easing: Easing.out(Easing.quad), useNativeDriver }),
-        ]),
-      ),
-    );
-    floats.forEach((f) => f.start());
-    return () => {
-      rotation.stop();
-      floats.forEach((f) => f.stop());
-    };
-  }, [scale, spin, text, particles]);
-
+  const stamp = useOnce(600, 300);
   if (!level) return <Redirect href="/viaje" />;
   const next = getLevel(level.id + 1);
 
-  return (
-    <Screen
-      background={colors.forestDeep}
-      footer={
-        <>
-          {next?.available && (
-            <Button
-              label={state.unlocked.includes(next.id) ? `Ir al Nivel ${next.id}` : `Desbloquear Nivel ${next.id} · ${formatCOP(next.price)}`}
-              variant="gold"
-              icon={state.unlocked.includes(next.id) ? 'arrowRight' : 'key'}
-              onPress={() => router.replace(`/nivel/${next.id}`)}
-            />
-          )}
-          <Button label="Volver a mi viaje" variant="ghost" style={{ minHeight: 44 }} onPress={() => router.replace('/viaje')} />
-        </>
-      }
-    >
-      <View style={{ alignItems: 'center', paddingTop: space.xxxl }}>
-        <View style={styles.stage}>
-          {PARTICLES.map((p, i) => (
-            <Animated.View
-              key={i}
-              style={[
-                styles.particle,
-                {
-                  width: p.size,
-                  height: p.size,
-                  left: 110 + p.x,
-                  opacity: particles[i].interpolate({ inputRange: [0, 0.2, 1], outputRange: [0, 0.9, 0] }),
-                  transform: [{ translateY: particles[i].interpolate({ inputRange: [0, 1], outputRange: [180, -20] }) }],
-                },
-              ]}
-            />
-          ))}
-          <Animated.View
-            style={[
-              styles.ring,
-              { transform: [{ rotate: spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] },
-            ]}
-          />
-          <Animated.View style={{ transform: [{ scale }] }}>
-            <Seal icon={level.symbol} size={180} />
-          </Animated.View>
-        </View>
+  const loot: { label: string; value: number; sprite: SpriteName; w: number; color: string; fg: string }[] = [
+    { label: 'XP', value: STATION_XP, sprite: 'gem', w: 18, color: colors.oro, fg: colors.bosque },
+    { label: 'RACHA', value: getStreak(state), sprite: 'lantern', w: 15, color: colors.brasa, fg: colors.bg },
+    { label: 'BOTÍN', value: 1, sprite: 'scroll', w: 20, color: colors.verdeLight, fg: colors.bosque },
+  ];
 
+  return (
+    <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+      <LinearGradient colors={[colors.verde, colors.bosque]} start={{ x: 0.5, y: 0.1 }} end={{ x: 0.5, y: 0.9 }} style={StyleSheet.absoluteFill} />
+      <Particles />
+      <View style={styles.center}>
+        <Pop duration={400}>
+          <GameLabel size={14} color={colors.oro}>MISIÓN COMPLETADA</GameLabel>
+        </Pop>
         <Animated.View
           style={{
-            opacity: text,
-            transform: [{ translateY: text.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
-            alignItems: 'center',
-            gap: space.md,
-            marginTop: space.xl,
+            opacity: stepped(stamp, [0, 0.6, 1, 1, 1]),
+            transform: [
+              { scale: stepped(stamp, [2.2, 1.6, 0.9, 0.95, 1]) },
+              { rotate: stepped(stamp, [-18, -14, -6, -7, -8]).interpolate({ inputRange: [-18, 0], outputRange: ['-18deg', '0deg'] }) },
+            ],
           }}
         >
-          <T variant="label" style={{ color: colors.champagne }}>Misión completada · Nivel {level.id}</T>
-          <T variant="display" style={{ color: colors.ivory, textAlign: 'center', fontSize: 34, lineHeight: 40, letterSpacing: 1 }}>
-            {level.achievement.toUpperCase()}
-          </T>
-          <T style={{ color: 'rgba(246,241,231,0.72)', textAlign: 'center', maxWidth: 360 }}>
-            Completaste la estación {level.stage.toLowerCase()}. Esto ya forma parte de tu historia financiera.
-          </T>
-
-          <Card style={styles.reward}>
-            <Icon name="doc" color={colors.champagne} />
-            <View style={{ flex: 1 }}>
-              <T variant="label" style={{ color: colors.champagne }}>Recompensa obtenida</T>
-              <T variant="bodyStrong" style={{ color: colors.ivory }}>{level.deliverable}</T>
-            </View>
-          </Card>
-          {next?.available && (
-            <T variant="small" style={{ color: 'rgba(246,241,231,0.6)', textAlign: 'center', marginTop: space.sm }}>
-              Tu siguiente estación: {next.title}
-            </T>
-          )}
+          <Sprite name="seal" width={144} />
         </Animated.View>
+        <Pop delay={900}>
+          <Text style={styles.title}>{level.achievement.toUpperCase()}</Text>
+        </Pop>
+        <Pop delay={1200} style={styles.loot}>
+          {loot.map((l) => (
+            <View key={l.label} style={[styles.lootBox, { borderColor: l.color }]}>
+              <View style={{ backgroundColor: l.color, paddingVertical: 4 }}>
+                <GameLabel size={10} color={l.fg} style={{ textAlign: 'center' }}>{l.label}</GameLabel>
+              </View>
+              <View style={styles.lootValue}>
+                <Sprite name={l.sprite} width={l.w} />
+                <Text style={styles.lootNumber}>{l.value}</Text>
+              </View>
+            </View>
+          ))}
+        </Pop>
+        <Pop delay={1400}>
+          <Text style={styles.received}>Recibiste: {level.deliverable}</Text>
+        </Pop>
+        <Pop delay={1600} style={{ width: '100%', maxWidth: 360, gap: 10 }}>
+          {next?.available ? (
+            <ChunkyButton
+              label={state.unlocked.includes(next.id) ? `Ir a la estación ${next.id}` : `Desbloquear estación ${next.id} · ${formatCOP(next.price)}`}
+              variant="oro"
+              onPress={() => router.replace(`/nivel/${next.id}`)}
+            />
+          ) : (
+            <ChunkyButton label="Continuar" variant="oro" onPress={() => router.replace('/perfil')} />
+          )}
+          <Pressable onPress={() => router.replace('/viaje')} style={({ pressed }) => [styles.back, pressed && { opacity: 0.8 }]}>
+            <Text style={styles.backText}>VOLVER AL VIAJE</Text>
+          </Pressable>
+        </Pop>
       </View>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  stage: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center' },
-  ring: {
-    position: 'absolute',
-    width: 216,
-    height: 216,
-    borderRadius: 108,
-    borderWidth: 1,
-    borderColor: 'rgba(201,179,138,0.45)',
-    borderStyle: 'dashed',
-  },
-  particle: { position: 'absolute', top: 0, borderRadius: 4, backgroundColor: colors.champagne },
-  reward: {
-    flexDirection: 'row',
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 22, paddingHorizontal: 24 },
+  title: { fontFamily: fonts.title, fontSize: 30, lineHeight: 34, letterSpacing: 0.6, color: colors.bg, textAlign: 'center', maxWidth: 460 },
+  loot: { flexDirection: 'row', gap: 10, width: '100%', maxWidth: 420 },
+  lootBox: { flex: 1, borderWidth: 2, borderRadius: 14, overflow: 'hidden' },
+  lootValue: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10 },
+  lootNumber: { fontFamily: fonts.title, fontSize: 18, color: colors.bg },
+  received: { fontFamily: fonts.bold, fontSize: 14, color: colors.verdeTint, textAlign: 'center' },
+  back: {
+    borderWidth: 2,
+    borderBottomWidth: 5,
+    borderColor: 'rgba(251,248,242,0.3)',
+    borderRadius: 16,
+    paddingVertical: 13,
     alignItems: 'center',
-    gap: space.lg,
-    alignSelf: 'stretch',
-    backgroundColor: 'rgba(246,241,231,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(201,179,138,0.35)',
-    marginTop: space.lg,
   },
+  backText: { fontFamily: fonts.title, fontSize: 14, letterSpacing: 0.8, color: colors.bg },
 });

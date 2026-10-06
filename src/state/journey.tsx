@@ -34,6 +34,10 @@ export type Achievement = { levelId: LevelId; title: string; date: string };
 export type JourneyState = {
   name: string;
   onboarded: boolean;
+  /** ISO date the journey started. */
+  joinedAt?: string;
+  /** Local days (YYYY-MM-DD) with activity — drives the streak. */
+  activity: string[];
   unlocked: LevelId[];
   completed: LevelId[];
   achievements: Achievement[];
@@ -63,6 +67,7 @@ const STORAGE_KEY = 'viaje-financiero/v1';
 export const initialState: JourneyState = {
   name: '',
   onboarded: false,
+  activity: [],
   unlocked: [],
   completed: [],
   achievements: [],
@@ -100,7 +105,8 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
   }, [state, hydrated]);
 
-  const update = useCallback((fn: (s: JourneyState) => JourneyState) => setState(fn), []);
+  /** Every change counts as activity for today's streak. */
+  const update = useCallback((fn: (s: JourneyState) => JourneyState) => setState((s) => withActivity(fn(s))), []);
 
   const unlock = useCallback(
     (id: LevelId) =>
@@ -110,7 +116,7 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
 
   const complete = useCallback(
     (id: LevelId, achievementTitle: string) =>
-      setState((s) =>
+      update((s) =>
         s.completed.includes(id)
           ? s
           : {
@@ -119,7 +125,7 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
               achievements: [...s.achievements, { levelId: id, title: achievementTitle, date: new Date().toISOString() }],
             },
       ),
-    [],
+    [update],
   );
 
   const reset = useCallback(() => setState(initialState), []);
@@ -130,6 +136,17 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
   );
 
   return <JourneyContext.Provider value={value}>{children}</JourneyContext.Provider>;
+}
+
+export function localDay(d = new Date()) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function withActivity(s: JourneyState): JourneyState {
+  const today = localDay();
+  return s.activity.includes(today) ? s : { ...s, activity: [...s.activity.slice(-120), today] };
 }
 
 export function useJourney() {

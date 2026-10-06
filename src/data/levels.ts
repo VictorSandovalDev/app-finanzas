@@ -1,3 +1,5 @@
+import { SpriteName } from '@/components/Sprite';
+
 export type LevelId = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type Level = {
@@ -12,26 +14,30 @@ export type Level = {
   duration: string;
   deliverable: string;
   achievement: string;
-  symbol: 'compass' | 'seed' | 'door' | 'map' | 'route' | 'home';
+  /** Pixel sprite emblem for the station. */
+  sprite: SpriteName;
   learn: string[];
   whatsappUrl: string;
+  /** Who leads the private group and when it meets. */
+  groupHost: string;
+  groupSession: string;
   available: boolean;
 };
 
-// TODO: replace the WhatsApp invite links with the real private groups per level.
+// TODO: replace the WhatsApp invite links, hosts and session times with the real private groups.
 export const LEVELS: Level[] = [
   {
     id: 1,
     stage: 'Descubrir',
-    title: 'Entendamos tu relación con el dinero',
+    title: 'Tu relación con el dinero',
     promise: 'Antes de los números, tu historia.',
     objective:
       'Entender por qué sientes que necesitas entrenamiento financiero antes de trabajar directamente con números.',
-    price: 49000,
+    price: 10000,
     duration: '1 semana',
     deliverable: 'Mapa Personal de Transformación',
     achievement: 'Conciencia financiera desbloqueada',
-    symbol: 'compass',
+    sprite: 'compass',
     learn: [
       'Identificar el pensamiento que hoy guía tus decisiones',
       'Reconocer la creencia y la emoción detrás de él',
@@ -39,6 +45,8 @@ export const LEVELS: Level[] = [
       'Recibir frases personales para empezar a moverte',
     ],
     whatsappUrl: 'https://chat.whatsapp.com/nivel-1',
+    groupHost: 'Martina acompaña el grupo',
+    groupSession: 'Sesión en vivo el jueves, 7:00 p. m.',
     available: true,
   },
   {
@@ -48,11 +56,11 @@ export const LEVELS: Level[] = [
     promise: 'El dinero no es magia: se mide, se conoce y se dirige.',
     objective:
       'Explicar de forma sencilla cómo funciona el dinero y quitarle la apariencia de algo complejo o mágico.',
-    price: 59000,
+    price: 20000,
     duration: '1 semana',
     deliverable: 'Mapa del Dinero',
     achievement: 'Entendimiento financiero desbloqueado',
-    symbol: 'seed',
+    sprite: 'sprout',
     learn: [
       'Dinero que entra y dinero que sale',
       'Ingreso, gasto, deuda y ahorro sin tecnicismos',
@@ -60,6 +68,8 @@ export const LEVELS: Level[] = [
       'Abundancia consciente, sin promesas mágicas',
     ],
     whatsappUrl: 'https://chat.whatsapp.com/nivel-2',
+    groupHost: 'Martina acompaña el grupo',
+    groupSession: 'Sesión en vivo el jueves, 7:00 p. m.',
     available: true,
   },
   {
@@ -69,11 +79,11 @@ export const LEVELS: Level[] = [
     promise: 'Un número que te devuelve el control.',
     objective:
       'Descubrir cuánto dinero necesitas realmente para sostener tu vida y entender la independencia económica.',
-    price: 69000,
+    price: 30000,
     duration: '1 semana',
     deliverable: 'Mi Número de Independencia',
     achievement: 'Conozco el costo de mi vida',
-    symbol: 'door',
+    sprite: 'door',
     learn: [
       'El recorrido hacia la independencia económica',
       'Tus necesidades esenciales, una por una',
@@ -81,6 +91,8 @@ export const LEVELS: Level[] = [
       'Tu costo de vida mensual, claro y visible',
     ],
     whatsappUrl: 'https://chat.whatsapp.com/nivel-3',
+    groupHost: 'Martina acompaña el grupo',
+    groupSession: 'Sesión en vivo el jueves, 7:00 p. m.',
     available: true,
   },
   {
@@ -93,9 +105,11 @@ export const LEVELS: Level[] = [
     duration: '1 semana',
     deliverable: 'Mi Plan Mensual',
     achievement: 'Orden financiero desbloqueado',
-    symbol: 'map',
+    sprite: 'map',
     learn: [],
     whatsappUrl: '',
+    groupHost: 'Martina acompaña el grupo',
+    groupSession: 'Sesión en vivo el jueves, 7:00 p. m.',
     available: false,
   },
   {
@@ -108,24 +122,28 @@ export const LEVELS: Level[] = [
     duration: '1 semana',
     deliverable: 'Mi Brújula de Decisiones',
     achievement: 'Dirección financiera desbloqueada',
-    symbol: 'route',
+    sprite: 'flag',
     learn: [],
     whatsappUrl: '',
+    groupHost: 'Martina acompaña el grupo',
+    groupSession: 'Sesión en vivo el jueves, 7:00 p. m.',
     available: false,
   },
   {
     id: 6,
     stage: 'Construir',
-    title: 'Construir tu futuro',
+    title: 'La casa con la ventana encendida',
     promise: 'Del mes a mes al largo plazo.',
     objective: 'Diseñar el camino hacia tu independencia económica.',
     price: 99000,
     duration: '2 semanas',
     deliverable: 'Mi Plan de Futuro',
     achievement: 'Constructor de futuro',
-    symbol: 'home',
+    sprite: 'house',
     learn: [],
     whatsappUrl: '',
+    groupHost: 'Martina acompaña el grupo',
+    groupSession: 'Sesión en vivo el jueves, 7:00 p. m.',
     available: false,
   },
 ];

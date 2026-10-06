@@ -1,9 +1,6 @@
-import {
-  CormorantGaramond_500Medium,
-  CormorantGaramond_500Medium_Italic,
-  CormorantGaramond_600SemiBold,
-} from '@expo-google-fonts/cormorant-garamond';
-import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import { CormorantGaramond_600SemiBold_Italic } from '@expo-google-fonts/cormorant-garamond';
+import { Nunito_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold, Nunito_900Black } from '@expo-google-fonts/nunito';
+import { Silkscreen_400Regular } from '@expo-google-fonts/silkscreen';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -15,19 +12,19 @@ import { colors } from '@/theme/tokens';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    CormorantGaramond_500Medium,
-    CormorantGaramond_500Medium_Italic,
-    CormorantGaramond_600SemiBold,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
+    Silkscreen_400Regular,
+    CormorantGaramond_600SemiBold_Italic,
   });
 
   return (
     <SafeAreaProvider>
       <JourneyProvider>
         <StatusBar style="dark" />
-        {fontsLoaded ? <Navigator /> : <View style={{ flex: 1, backgroundColor: colors.ivory }} />}
+        {fontsLoaded ? <Navigator /> : <View style={{ flex: 1, backgroundColor: colors.bg }} />}
       </JourneyProvider>
     </SafeAreaProvider>
   );
@@ -35,10 +32,10 @@ export default function RootLayout() {
 
 function Navigator() {
   const { hydrated } = useJourney();
-  if (!hydrated) return <View style={{ flex: 1, backgroundColor: colors.ivory }} />;
+  if (!hydrated) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ivory }, animation: 'fade_from_bottom' }}>
-      <Stack.Screen name="logro/[id]" options={{ animation: 'fade', gestureEnabled: false }} />
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'fade_from_bottom' }}>
+      <Stack.Screen name="logro/[id]" options={{ animation: 'fade', gestureEnabled: false, contentStyle: { backgroundColor: colors.bosque } }} />
       <Stack.Screen name="nivel/[id]/desbloquear" options={{ presentation: 'modal' }} />
     </Stack>
   );

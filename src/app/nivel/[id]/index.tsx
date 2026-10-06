@@ -1,19 +1,21 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { ReactNode } from 'react';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { GroupCard } from '@/components/GroupCard';
-import { Icon } from '@/components/Icon';
-import { Seal } from '@/components/Seal';
-import { Button, Card, Divider, IconBadge, Pill, ProgressBar, Screen, T, TopBar } from '@/components/ui';
+import { Hud } from '@/components/Hud';
+import { Bob } from '@/components/motion';
+import { Sprite } from '@/components/Sprite';
+import { BackButton, Card, ChunkyButton, Column, Columns, GameLabel, MentorSays, Node, ProgressBar, Screen, T } from '@/components/ui';
 import { formatCOP, getLevel, Level } from '@/data/levels';
 import { useJourney } from '@/state/journey';
-import { canCompleteLevel, getDeliverables, getMissions, Mission } from '@/state/missions';
-import { colors, radius, space } from '@/theme/tokens';
+import { canCompleteLevel, getDeliverables, getLevelXp, getMissions, Mission, STATION_XP } from '@/state/missions';
+import { colors, fonts, radius } from '@/theme/tokens';
 
-const QUOTES: Record<number, string> = {
-  1: 'Antes de cambiar lo que haces con tu dinero, vale la pena entender por qué lo haces.',
-  2: 'El dinero puede medirse, conocerse y dirigirse.',
-  3: 'Cuando conoces el costo de tu vida, dejas de adivinar.',
+const MENTOR_TIPS: Record<number, string> = {
+  1: 'Antes de hablar de números, quiero entender tu historia. No hay respuestas correctas.',
+  2: 'Ten a mano tus movimientos del último mes. Con ellos tu mapa será exacto.',
+  3: 'Empieza por lo esencial. Si algo se paga cada año, divídelo entre doce.',
 };
 
 export default function LevelScreen() {
@@ -21,7 +23,6 @@ export default function LevelScreen() {
   const { state } = useJourney();
   const level = getLevel(Number(id));
   if (!level) return <Redirect href="/viaje" />;
-
   if (!level.available) return <ComingSoon level={level} />;
   if (!state.unlocked.includes(level.id)) return <LockedLevel level={level} />;
   return <ActiveLevel level={level} />;
@@ -35,83 +36,86 @@ function LockedLevel({ level }: { level: Level }) {
   return (
     <Screen
       footer={
-        <>
-          <View style={styles.priceRow}>
-            <View>
-              <T variant="label">Desbloqueo único</T>
-              <T variant="title" style={{ fontSize: 28 }}>{formatCOP(level.price)}</T>
-            </View>
-            <Pill tone="sage" label={level.duration} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <View>
+            <T variant="small" style={{ fontFamily: fonts.heavy, fontSize: 12 }}>Pago único</T>
+            <Text style={styles.price}>{formatCOP(level.price)}</Text>
           </View>
-          <Button
-            label={ready ? 'Desbloquear nivel' : `Completa el Nivel ${previous!.id} para desbloquear`}
-            icon={ready ? 'key' : 'lock'}
+          <ChunkyButton
+            label={ready ? 'Desbloquear' : `Completa la estación ${previous!.id}`}
+            variant="brasa"
             disabled={!ready}
             onPress={() => router.push(`/nivel/${level.id}/desbloquear`)}
+            style={{ flex: 1 }}
           />
-        </>
+        </View>
       }
     >
-      <TopBar title={`Nivel ${level.id}`} />
-      <View style={{ alignItems: 'center', gap: space.md, paddingVertical: space.xl }}>
-        <View>
-          <Seal icon={level.symbol} size={132} muted />
-          <View style={styles.lockBadge}>
-            <Icon name="lock" size={18} color={colors.ivory} />
+      <BackButton onPress={() => (router.canGoBack() ? router.back() : router.replace('/mapa'))} />
+      <Columns gap={20}>
+        <Column gap={14}>
+          <View style={{ alignItems: 'center', gap: 14 }}>
+            <View style={styles.lockedArt}>
+              <Sprite name={level.sprite} width={128} filter="silhouette" opacity={0.18} />
+              <Bob duration={2000} steps={3} style={{ position: 'absolute', bottom: 6, right: 14 }}>
+                <Sprite name="lock" width={60} />
+              </Bob>
+            </View>
+            <GameLabel color={colors.muted}>
+              ESTACIÓN {level.id} · {level.stage.toUpperCase()} · {level.duration.toUpperCase()}
+            </GameLabel>
+            <T variant="title" style={{ textAlign: 'center' }}>{level.title}</T>
+            <T style={{ fontSize: 16, textAlign: 'center' }}>{level.promise}</T>
           </View>
-        </View>
-        <Pill tone="champagne" label={`${level.stage} · Bloqueado`} icon="lock" />
-        <T variant="display" style={{ textAlign: 'center', fontSize: 36, lineHeight: 40 }}>{level.title}</T>
-        <T variant="quote" style={{ textAlign: 'center', fontSize: 20, color: colors.inkSoft }}>{level.promise}</T>
-      </View>
-
-      <Card style={{ gap: space.md }}>
-        <T variant="label">El objetivo</T>
-        <T>{level.objective}</T>
-      </Card>
-
-      <T variant="heading" style={{ marginTop: space.xxl, marginBottom: space.md }}>Lo que vas a descubrir</T>
-      <View style={{ gap: space.md }}>
-        {level.learn.map((item, i) => (
-          <View key={item} style={{ flexDirection: 'row', gap: space.md, alignItems: 'flex-start' }}>
-            <T style={styles.number}>{String(i + 1).padStart(2, '0')}</T>
-            <T style={{ flex: 1, color: colors.ink }}>{item}</T>
+        </Column>
+        <Column gap={14}>
+          <Card style={{ gap: 10 }}>
+            <GameLabel>LO QUE VAS A DESCUBRIR</GameLabel>
+            {level.learn.map((item, i) => (
+              <View key={item} style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={styles.num}>
+                  <Text style={styles.numText}>{i + 1}</Text>
+                </View>
+                <T style={{ flex: 1, color: colors.ink, lineHeight: 21 }}>{item}</T>
+              </View>
+            ))}
+          </Card>
+          <GameLabel style={{ paddingTop: 4 }}>RECOMPENSAS</GameLabel>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <Reward bg={colors.oroTint} border={colors.oro} sprite={<Sprite name="scroll" width={42} />} label={level.deliverable} />
+            <Reward bg={colors.lacreTint} border={colors.lacre} sprite={<Sprite name="seal" width={40} />} label={level.achievement} />
+            <Reward
+              bg={colors.card}
+              border={colors.border}
+              sprite={<Sprite name="gem" width={36} />}
+              label={<GameLabel color={colors.oroDark}>+{STATION_XP} XP</GameLabel>}
+            />
           </View>
-        ))}
-      </View>
-
-      <View style={{ flexDirection: 'row', gap: space.md, marginTop: space.xxl }}>
-        <Card tone="champagne" style={styles.rewardCard}>
-          <Icon name="doc" color="#8A6F3E" />
-          <T variant="label" style={{ color: '#8A6F3E' }}>Recompensa</T>
-          <T variant="bodyStrong">{level.deliverable}</T>
-        </Card>
-        <Card tone="sage" style={styles.rewardCard}>
-          <Icon name="sparkle" color={colors.forest} />
-          <T variant="label" style={{ color: colors.forest }}>Logro</T>
-          <T variant="bodyStrong">{level.achievement}</T>
-        </Card>
-      </View>
-
-      <Card tone="paper" style={{ marginTop: space.md, flexDirection: 'row', gap: space.md, alignItems: 'center' }}>
-        <Icon name="chat" color={colors.forest} />
-        <T variant="small" style={{ flex: 1, color: colors.inkSoft }}>
-          Incluye acceso al grupo privado de WhatsApp del nivel durante {level.duration}.
-        </T>
-      </Card>
+        </Column>
+      </Columns>
     </Screen>
   );
 }
 
+function Reward({ bg, border, sprite, label }: { bg: string; border: string; sprite: ReactNode; label: ReactNode }) {
+  return (
+    <View style={[styles.reward, { backgroundColor: bg, borderColor: border }]}>
+      {sprite}
+      {typeof label === 'string' ? <Text style={styles.rewardText}>{label}</Text> : label}
+    </View>
+  );
+}
+
 function ActiveLevel({ level }: { level: Level }) {
-  const { state, complete } = useJourney();
+  const { state, complete, update } = useJourney();
   const missions = getMissions(state, level.id);
   const required = missions.filter((m) => !m.optional);
   const done = required.filter((m) => m.done).length;
   const completed = state.completed.includes(level.id);
-  const canComplete = canCompleteLevel(state, level.id);
-  const nextMission = missions.find((m) => !m.done && !m.optional);
+  const next = required.find((m) => !m.done);
+  const xp = getLevelXp(state, level.id);
   const nextLevel = getLevel(level.id + 1);
+  const deliverable = getDeliverables(state).find((d) => d.levelId === level.id);
 
   const finish = () => {
     complete(level.id, level.achievement);
@@ -119,79 +123,132 @@ function ActiveLevel({ level }: { level: Level }) {
   };
 
   return (
-    <Screen>
-      <TopBar title={`Nivel ${level.id} · ${level.stage}`} />
-      <View style={{ gap: space.md, paddingTop: space.md }}>
-        <Pill tone={completed ? 'champagne' : 'sage'} icon={completed ? 'check' : 'key'} label={completed ? 'Nivel completado' : 'Nivel desbloqueado'} />
-        <T variant="display" style={{ fontSize: 36, lineHeight: 40 }}>{level.title}</T>
-        <T>{level.objective}</T>
+    <Screen header={<Hud />} edgeToEdge maxWidth={1000}>
+      <View style={styles.hero}>
+        <LinearGradient colors={[colors.verdeTint, '#B9DCC2']} style={StyleSheet.absoluteFill} />
+        <Bob duration={2400}>
+          <Sprite name={level.sprite} width={96} />
+        </Bob>
+        <View style={{ flex: 1, minWidth: 0, gap: 8 }}>
+          <GameLabel color={colors.verde}>ESTACIÓN {level.id} · {level.stage.toUpperCase()}</GameLabel>
+          <T variant="title" style={{ fontSize: 26, lineHeight: 28 }}>{level.title}</T>
+          <ProgressBar value={(done / required.length) * 100} color={colors.verde} shade={colors.bosque} track="rgba(11,61,46,0.15)" height={14} />
+          <Text style={styles.heroMeta}>
+            {done} de {required.length} misiones · {xp.earned} / {xp.max} XP
+          </Text>
+        </View>
       </View>
 
-      <Card tone="paper" style={{ marginTop: space.xl, gap: space.md }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <T variant="label">Progreso del nivel</T>
-          <T variant="label" style={{ color: colors.forest }}>{done} de {required.length} misiones</T>
-        </View>
-        <ProgressBar value={(done / Math.max(1, required.length)) * 100} />
-        <T variant="small">Duración sugerida: {level.duration} · Entregable: {level.deliverable}</T>
-      </Card>
+      <Columns>
+        <Column gap={12}>
+          <GameLabel>BITÁCORA DE MISIONES</GameLabel>
+          {required.map((m) =>
+            m.done ? <DoneMission key={m.id} mission={m} /> : m === next ? <NextMission key={m.id} mission={m} /> : <PendingMission key={m.id} mission={m} />,
+          )}
+          {missions
+            .filter((m) => m.optional)
+            .map((m) => (
+              <Card
+                key={m.id}
+                dashed
+                bg={colors.bg}
+                borderColor={colors.lockedDark}
+                radius={18}
+                onPress={() => {
+                  if (level.whatsappUrl) Linking.openURL(level.whatsappUrl).catch(() => {});
+                  if (level.id === 1) update((st) => ({ ...st, level1: { ...st.level1, joinedGroup: true } }));
+                }}
+                style={styles.row}
+              >
+                <Sprite name={m.sprite} width={40} opacity={0.7} />
+                <View style={{ flex: 1 }}>
+                  <T variant="bodyStrong" style={{ color: colors.inkSoft }}>{m.title}</T>
+                  <GameLabel size={10} color={m.done ? colors.oroDark : colors.muted}>
+                    {m.done ? `HECHO · +${m.xp} XP` : `OPCIONAL · +${m.xp} XP`}
+                  </GameLabel>
+                </View>
+              </Card>
+            ))}
+          <Card bg={colors.oroTint} borderColor={colors.oro} radius={18} style={styles.row} onPress={completed && deliverable ? () => router.push(deliverable.href) : undefined}>
+            <Sprite name="scroll" width={42} />
+            <View style={{ flex: 1 }}>
+              <GameLabel size={10} color={colors.oroText}>RECOMPENSA DE ESTACIÓN</GameLabel>
+              <T variant="bodyStrong">
+                {level.deliverable} + {STATION_XP} XP
+              </T>
+            </View>
+          </Card>
 
-      {QUOTES[level.id] ? (
-        <View style={styles.quote}>
-          <T variant="quote">“{QUOTES[level.id]}”</T>
-        </View>
-      ) : null}
-
-      <T variant="heading" style={{ marginBottom: space.md }}>Misiones</T>
-      <View style={{ gap: space.md }}>
-        {missions
-          .filter((m) => m.id !== 'grupo')
-          .map((m, i) => (
-            <MissionCard key={m.id} mission={m} index={i + 1} isNext={m === nextMission} />
-          ))}
-      </View>
-
-      {level.whatsappUrl ? (
-        <View style={{ marginTop: space.xl }}>
-          <GroupCard level={level} />
-        </View>
-      ) : null}
-
-      <View style={{ marginTop: space.xxl, gap: space.md }}>
-        {completed ? (
-          <>
-            <Button label={`Ver mi ${level.deliverable}`} icon="doc" variant="secondary" onPress={() => router.push(getDeliverables(state).find((d) => d.levelId === level.id)!.href)} />
-            {nextLevel?.available && (
-              <Button
-                label={state.unlocked.includes(nextLevel.id) ? `Ir al Nivel ${nextLevel.id}` : `Desbloquear Nivel ${nextLevel.id}`}
-                icon="arrowRight"
+          {completed ? (
+            nextLevel?.available ? (
+              <ChunkyButton
+                label={state.unlocked.includes(nextLevel.id) ? `Ir a la estación ${nextLevel.id}` : `Desbloquear estación ${nextLevel.id}`}
+                variant={state.unlocked.includes(nextLevel.id) ? 'verde' : 'brasa'}
                 onPress={() => router.push(`/nivel/${nextLevel.id}`)}
               />
-            )}
-          </>
-        ) : canComplete ? (
-          <Button label="Completar nivel" icon="sparkle" variant="gold" onPress={finish} />
-        ) : nextMission ? (
-          <Button label="Continuar mi misión" icon="arrowRight" onPress={() => router.push(nextMission.href)} />
-        ) : null}
-      </View>
+            ) : null
+          ) : canCompleteLevel(state, level.id) ? (
+            <ChunkyButton label="Completar estación" variant="oro" onPress={finish} />
+          ) : null}
+        </Column>
+        <Column>
+          <View style={{ paddingTop: 26 }}>
+            <Pressable onPress={() => router.push(level.id === 1 && !state.level1.map ? '/mision/relato' : '/mentor')}>
+              <MentorSays size={72} footer={<GameLabel size={11} color={colors.verde}>HABLAR CON VICTOR →</GameLabel>}>
+                {MENTOR_TIPS[level.id] ?? 'Avanzamos una misión a la vez.'}
+              </MentorSays>
+            </Pressable>
+          </View>
+        </Column>
+      </Columns>
     </Screen>
   );
 }
 
-function MissionCard({ mission, index, isNext }: { mission: Mission; index: number; isNext: boolean }) {
+function DoneMission({ mission }: { mission: Mission }) {
   return (
-    <Card onPress={() => router.push(mission.href)} style={[styles.mission, isNext && { borderColor: colors.champagne, borderWidth: 1.5 }]}>
-      <View style={[styles.missionMark, mission.done && { backgroundColor: colors.forest, borderColor: colors.forest }]}>
-        {mission.done ? <Icon name="check" size={16} color={colors.ivory} strokeWidth={2.2} /> : <T variant="label" style={{ color: colors.forest }}>{index}</T>}
+    <Card radius={18} style={styles.row} onPress={() => router.push(mission.href)}>
+      <Node size={40} color={colors.oro} shade={colors.oroDark}>
+        <Text style={{ fontFamily: fonts.title, fontSize: 18, color: colors.bosque }}>✓</Text>
+      </Node>
+      <View style={{ flex: 1 }}>
+        <T variant="bodyStrong" style={{ fontSize: 16 }}>{mission.title}</T>
+        <GameLabel size={10} color={colors.oroDark}>MISIÓN COMPLETADA · +{mission.xp} XP</GameLabel>
       </View>
-      <View style={{ flex: 1, gap: 4 }}>
-        {isNext && <T variant="label" style={{ color: colors.terracotta }}>Tu siguiente misión</T>}
-        {mission.done && <T variant="label" style={{ color: colors.forest }}>Misión completada</T>}
-        <T variant="bodyStrong">{mission.title}</T>
-        <T variant="small">{mission.description}</T>
+    </Card>
+  );
+}
+
+function NextMission({ mission }: { mission: Mission }) {
+  return (
+    <Card borderColor={colors.verde} edge={6} radius={18} style={{ gap: 10 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <GameLabel size={11} color={colors.brasa}>TU SIGUIENTE MISIÓN</GameLabel>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Sprite name="gem" width={14} />
+          <GameLabel size={11} color={colors.oroDark}>+{mission.xp} XP</GameLabel>
+        </View>
       </View>
-      <Icon name="arrowRight" size={18} color={colors.warmGray} />
+      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <Sprite name={mission.sprite} width={52} />
+        <View style={{ flex: 1 }}>
+          <T variant="h2">{mission.title}</T>
+          <T style={{ fontSize: 14, lineHeight: 20 }}>{mission.description}</T>
+        </View>
+      </View>
+      <ChunkyButton label="Empezar" size="md" onPress={() => router.push(mission.href)} />
+    </Card>
+  );
+}
+
+function PendingMission({ mission }: { mission: Mission }) {
+  return (
+    <Card radius={18} bg={colors.divider} borderColor={colors.locked} style={styles.row}>
+      <Sprite name="lock" width={26} filter="grayscale" opacity={0.6} />
+      <View style={{ flex: 1 }}>
+        <T variant="bodyStrong" style={{ color: colors.muted }}>{mission.title}</T>
+        <GameLabel size={10} color={colors.muted}>+{mission.xp} XP</GameLabel>
+      </View>
     </Card>
   );
 }
@@ -199,47 +256,56 @@ function MissionCard({ mission, index, isNext }: { mission: Mission; index: numb
 function ComingSoon({ level }: { level: Level }) {
   return (
     <Screen>
-      <TopBar title={`Nivel ${level.id}`} />
-      <View style={{ alignItems: 'center', gap: space.lg, paddingTop: space.xxxl }}>
-        <IconBadge name={level.symbol} tone="muted" size={88} />
-        <Pill tone="champagne" label="Próximamente" />
-        <T variant="display" style={{ textAlign: 'center', fontSize: 36 }}>{level.title}</T>
-        <T style={{ textAlign: 'center' }}>{level.objective}</T>
-        <Divider style={{ alignSelf: 'stretch', marginVertical: space.lg }} />
-        <T variant="small" style={{ textAlign: 'center' }}>
-          Esta estación se está preparando. Te avisaremos cuando puedas desbloquearla.
-        </T>
+      <BackButton />
+      <View style={{ alignItems: 'center', gap: 14, paddingTop: 24 }}>
+        <View style={styles.lockedArt}>
+          <Sprite name={level.sprite} width={128} filter="silhouette" opacity={0.18} />
+        </View>
+        <GameLabel color={colors.muted}>ESTACIÓN {level.id} · {level.stage.toUpperCase()} · PRONTO</GameLabel>
+        <T variant="title" style={{ textAlign: 'center' }}>{level.title}</T>
+        <T style={{ textAlign: 'center', maxWidth: 420 }}>{level.objective}</T>
+        <T variant="small" style={{ textAlign: 'center' }}>Esta estación se está preparando. Te avisaremos cuando abra.</T>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: space.sm },
-  lockBadge: {
-    position: 'absolute',
-    right: 10,
-    bottom: 10,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.terracotta,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: colors.ivory,
-  },
-  number: { fontFamily: 'CormorantGaramond_600SemiBold', fontSize: 20, color: colors.champagne, width: 28 },
-  rewardCard: { flex: 1, gap: space.sm, padding: space.lg, borderRadius: radius.md },
-  quote: { borderLeftWidth: 2, borderLeftColor: colors.champagne, paddingLeft: space.lg, marginVertical: space.xxl },
-  mission: { flexDirection: 'row', alignItems: 'center', gap: space.lg, padding: space.lg, borderRadius: radius.md, borderWidth: 1.5, borderColor: 'transparent' },
-  missionMark: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: colors.sage,
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+  price: { fontFamily: fonts.title, fontSize: 24, lineHeight: 26, color: colors.bosque },
+  lockedArt: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: colors.divider,
+    borderWidth: 4,
+    borderStyle: 'dashed',
+    borderColor: colors.lockedDark,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  num: { width: 20, height: 20, borderRadius: 6, backgroundColor: colors.verdeTint, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  numText: { fontFamily: fonts.title, fontSize: 12, color: colors.verde },
+  reward: {
+    flex: 1,
+    borderWidth: 2,
+    borderBottomWidth: 4,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    gap: 6,
+  },
+  rewardText: { fontFamily: fonts.heavy, fontSize: 11, lineHeight: 14, textAlign: 'center', color: colors.ink },
+  hero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 20,
+    borderRadius: radius.hero,
+    borderBottomWidth: 6,
+    borderBottomColor: colors.verdeLight,
+    overflow: 'hidden',
+  },
+  heroMeta: { fontFamily: fonts.heavy, fontSize: 13, color: colors.bosque },
 });

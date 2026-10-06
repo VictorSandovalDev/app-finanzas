@@ -1,32 +1,23 @@
 import { Redirect, router } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { Animated, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { Icon, IconName } from '@/components/Icon';
-import { Button, Card, Screen, T, TopBar } from '@/components/ui';
+import { Bob } from '@/components/motion';
+import { Sprite, SpriteName } from '@/components/Sprite';
+import { BackButton, Chip, ChunkyButton, GameLabel, Screen, T, useWide } from '@/components/ui';
 import { MantraRole, useJourney } from '@/state/journey';
-import { colors, space, useNativeDriver } from '@/theme/tokens';
+import { colors } from '@/theme/tokens';
 
-const ROLES: Record<MantraRole, { title: string; purpose: string; icon: IconName; tone: 'surface' | 'sage' | 'champagne' }> = {
-  reencuadre: { title: 'Reencuadre', purpose: 'Cambia la forma de mirar un pensamiento.', icon: 'compass', tone: 'surface' },
-  capacidad: { title: 'Capacidad', purpose: 'Fortalece lo que ya eres capaz de hacer.', icon: 'seed', tone: 'sage' },
-  accion: { title: 'Acción', purpose: 'Te mueve hacia un paso concreto esta semana.', icon: 'route', tone: 'champagne' },
+const ROLES: Record<MantraRole, { label: string; color: string; fg: string; stripes: [string, string]; sprite: SpriteName; w: number }> = {
+  reencuadre: { label: 'REENCUADRE', color: colors.brasa, fg: colors.bg, stripes: ['#FCE1DB', '#FAD3CA'], sprite: 'lantern', w: 72 },
+  capacidad: { label: 'CAPACIDAD', color: colors.verde, fg: colors.bg, stripes: ['#DDEBE1', '#CFE3D5'], sprite: 'sprout', w: 80 },
+  accion: { label: 'ACCIÓN', color: colors.oro, fg: colors.bosque, stripes: ['#FDF0D2', '#FCE6B3'], sprite: 'flag', w: 80 },
 };
 
 export default function Mantras() {
   const { state, update } = useJourney();
+  const wide = useWide(820);
   const mantras = state.level1.mantras;
-  const anims = useRef([0, 1, 2].map(() => new Animated.Value(0))).current;
-
-  useEffect(() => {
-    Animated.stagger(
-      180,
-      anims.map((a) => Animated.timing(a, { toValue: 1, duration: 500, useNativeDriver })),
-    ).start();
-  }, [anims]);
-
   if (!mantras) return <Redirect href="/mision/relato" />;
-  const saved = state.level1.mantrasSaved;
 
   const save = () => {
     update((s) => ({ ...s, level1: { ...s.level1, mantrasSaved: true } }));
@@ -34,44 +25,45 @@ export default function Mantras() {
   };
 
   return (
-    <Screen
-      footer={
-        saved ? (
-          <Button label="Volver al nivel" variant="secondary" onPress={() => router.replace('/nivel/1')} />
-        ) : (
-          <Button label="Hacer mías estas frases" icon="check" onPress={save} />
-        )
-      }
-    >
-      <TopBar title="Nivel 1 · Tus frases" />
-      <View style={{ gap: space.md, paddingVertical: space.lg }}>
-        <T variant="label">Escritas para ti</T>
-        <T variant="title">Tres frases para acompañar tu semana</T>
-        <T>Léelas en voz alta cada mañana. No buscan convencerte de nada: te recuerdan hacia dónde vas.</T>
+    <Screen>
+      <BackButton />
+      <View>
+        <GameLabel color={colors.verde}>{mantras.length} CARTAS DESBLOQUEADAS</GameLabel>
+        <T variant="title">Tus frases personales</T>
       </View>
-
-      <View style={{ gap: space.lg, marginTop: space.md }}>
-        {mantras.map((m, i) => {
-          const role = ROLES[m.role];
+      <View style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
+        {mantras.map((m) => {
+          const r = ROLES[m.role];
           return (
-            <Animated.View
-              key={m.role}
-              style={{ opacity: anims[i], transform: [{ translateY: anims[i].interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }] }}
-            >
-              <Card tone={role.tone} style={{ gap: space.lg }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
-                  <Icon name={role.icon} size={18} color={colors.forest} />
-                  <T variant="label" style={{ color: colors.forest }}>
-                    {String(i + 1).padStart(2, '0')} · {role.title}
-                  </T>
+            <View key={m.role} style={[styles.card, { borderColor: r.color }, wide && { flex: 1 }]}>
+              <View style={styles.art}>
+                <View style={StyleSheet.absoluteFill}>
+                  {Array.from({ length: 18 }, (_, i) => (
+                    <View key={i} style={{ height: 8, backgroundColor: r.stripes[i % 2] }} />
+                  ))}
                 </View>
-                <T variant="quote">“{m.text}”</T>
-                <T variant="small">{role.purpose}</T>
-              </Card>
-            </Animated.View>
+                <Bob duration={2200} steps={3}>
+                  <Sprite name={r.sprite} width={r.w} />
+                </Bob>
+              </View>
+              <View style={{ paddingHorizontal: 6, paddingBottom: 8, gap: 8 }}>
+                <Chip label={r.label} bg={r.color} fg={r.fg} />
+                <T variant="phrase">{m.text}</T>
+              </View>
+            </View>
           );
         })}
       </View>
+      {state.level1.mantrasSaved ? (
+        <ChunkyButton label="Volver a la estación" variant="secondary" onPress={() => router.replace('/nivel/1')} style={{ maxWidth: 420 }} />
+      ) : (
+        <ChunkyButton label="Guardar mis frases · +80 XP" onPress={save} style={{ maxWidth: 420 }} />
+      )}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  card: { backgroundColor: colors.card, borderWidth: 4, borderBottomWidth: 8, borderRadius: 20, padding: 10, gap: 12 },
+  art: { height: 140, borderRadius: 12, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+});

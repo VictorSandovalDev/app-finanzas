@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ReactNode } from 'react';
+import { createContext, ReactNode, useContext } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,30 +8,64 @@ import {
   StyleSheet,
   Text,
   TextProps,
+  TextStyle,
+  useWindowDimensions,
   View,
   ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon, IconName } from '@/components/Icon';
-import { colors, fonts, maxContentWidth, radius, shadow, space } from '@/theme/tokens';
+import { Sprite } from '@/components/Sprite';
+import { colors, fonts, maxContentWidth, radius, space } from '@/theme/tokens';
+
+/** Horizontal page padding: clamp(16px, 3cqw, 40px). */
+export function useGutter() {
+  const { width } = useWindowDimensions();
+  return Math.min(40, Math.max(16, width * 0.03));
+}
+
+/** True on wide (web/tablet) layouts, where the design switches to two columns. */
+export function useWide(breakpoint = 760) {
+  return useWindowDimensions().width >= breakpoint;
+}
 
 type ScreenProps = {
   children: ReactNode;
   scroll?: boolean;
   background?: string;
+  /** Sticky content above the scroll area (e.g. the HUD). */
+  header?: ReactNode;
+  /** Sticky bar at the bottom. */
   footer?: ReactNode;
+  maxWidth?: number;
   contentStyle?: StyleProp<ViewStyle>;
+  /** Skip the top safe-area inset (when a header already handles it). */
+  edgeToEdge?: boolean;
 };
 
-export function Screen({ children, scroll = true, background = colors.ivory, footer, contentStyle }: ScreenProps) {
+export function Screen({
+  children,
+  scroll = true,
+  background = colors.bg,
+  header,
+  footer,
+  maxWidth = maxContentWidth,
+  contentStyle,
+  edgeToEdge,
+}: ScreenProps) {
   const insets = useSafeAreaInsets();
-  const inner = <View style={[styles.column, contentStyle]}>{children}</View>;
+  const gutter = useGutter();
+  const inner = (
+    <View style={[{ width: '100%', maxWidth, alignSelf: 'center', paddingHorizontal: gutter, gap: space.lg }, contentStyle]}>
+      {children}
+    </View>
+  );
   return (
-    <View style={{ flex: 1, backgroundColor: background, paddingTop: insets.top }}>
+    <View style={{ flex: 1, backgroundColor: background, paddingTop: edgeToEdge ? 0 : insets.top }}>
+      {header}
       {scroll ? (
         <ScrollView
-          contentContainerStyle={{ paddingBottom: footer ? space.xl : insets.bottom + space.xxxl }}
+          contentContainerStyle={{ paddingTop: space.lg, paddingBottom: footer ? space.xl : insets.bottom + space.xxxl }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -41,194 +75,270 @@ export function Screen({ children, scroll = true, background = colors.ivory, foo
         <View style={{ flex: 1 }}>{inner}</View>
       )}
       {footer ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + space.lg, backgroundColor: background }]}>
-          <View style={styles.footerInner}>{footer}</View>
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 18, backgroundColor: background }]}>
+          <View style={{ width: '100%', maxWidth, alignSelf: 'center', paddingHorizontal: gutter, gap: space.sm }}>{footer}</View>
         </View>
       ) : null}
     </View>
   );
 }
 
-type Variant = 'display' | 'title' | 'heading' | 'body' | 'bodyStrong' | 'small' | 'label' | 'quote';
+type Variant = 'title' | 'h2' | 'body' | 'bodyStrong' | 'small' | 'phrase';
 
 export function T({ variant = 'body', style, ...rest }: TextProps & { variant?: Variant }) {
-  return <Text {...rest} style={[textStyles[variant], style]} />;
+  return <Text {...rest} style={[text[variant], style]} />;
 }
+
+/** Silkscreen label — short game texts only. */
+export function GameLabel({ children, color = colors.inkSoft, size = 12, style }: { children: ReactNode; color?: string; size?: number; style?: StyleProp<TextStyle> }) {
+  return <Text style={[{ fontFamily: fonts.game, fontSize: size, color, lineHeight: size * 1.35 }, style]}>{children}</Text>;
+}
+
+export type ButtonVariant = 'verde' | 'oro' | 'brasa' | 'lacre' | 'secondary' | 'outlineDark' | 'bosque';
+
+const BUTTON: Record<ButtonVariant, { bg: string; fg: string; shade: string; border?: string }> = {
+  verde: { bg: colors.verde, fg: colors.bg, shade: colors.bosque },
+  oro: { bg: colors.oro, fg: colors.bosque, shade: colors.oroDark },
+  brasa: { bg: colors.brasa, fg: colors.bg, shade: colors.lacre },
+  lacre: { bg: colors.lacre, fg: colors.bg, shade: colors.lacreDark },
+  bosque: { bg: colors.bosque, fg: colors.bg, shade: colors.bosqueDeep },
+  secondary: { bg: colors.card, fg: colors.verde, shade: colors.border, border: colors.border },
+  outlineDark: { bg: 'transparent', fg: colors.bg, shade: 'rgba(251,248,242,0.3)', border: 'rgba(251,248,242,0.3)' },
+};
 
 type ButtonProps = {
   label: string;
   onPress?: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'gold';
-  icon?: IconName;
+  variant?: ButtonVariant;
+  size?: 'lg' | 'md' | 'sm';
   loading?: boolean;
   disabled?: boolean;
+  uppercase?: boolean;
+  left?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
-export function Button({ label, onPress, variant = 'primary', icon, loading, disabled, style }: ButtonProps) {
-  const palette = {
-    primary: { bg: colors.forest, fg: colors.ivory, border: colors.forest },
-    gold: { bg: colors.champagne, fg: colors.forestDeep, border: colors.champagne },
-    secondary: { bg: 'transparent', fg: colors.forest, border: colors.forest },
-    ghost: { bg: 'transparent', fg: colors.inkSoft, border: 'transparent' },
-  }[variant];
-  const inactive = disabled || loading;
+/** "Botón con volumen": a 5px bottom edge that sinks 3px when pressed. */
+export function ChunkyButton({ label, onPress, variant = 'verde', size = 'lg', loading, disabled, uppercase = true, left, style }: ButtonProps) {
+  const v = BUTTON[variant];
+  const edge = size === 'sm' ? 4 : 5;
+  const pad = size === 'lg' ? 16 : size === 'md' ? 13 : 10;
+  const fontSize = size === 'lg' ? 16 : size === 'md' ? 15 : 13;
   return (
     <Pressable
       onPress={onPress}
-      disabled={inactive}
+      disabled={disabled || loading}
       accessibilityRole="button"
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: palette.bg, borderColor: palette.border, opacity: disabled ? 0.45 : pressed ? 0.85 : 1 },
-        style,
-      ]}
+      accessibilityLabel={label}
+      style={({ pressed }) => {
+        const sunk = pressed && !disabled ? edge - 2 : 0;
+        return [
+          {
+            backgroundColor: v.bg,
+            borderColor: v.border ?? v.shade,
+            borderWidth: v.border ? 2 : 0,
+            borderBottomWidth: edge - sunk,
+            borderBottomColor: v.shade,
+            marginTop: sunk,
+            borderRadius: size === 'sm' ? 14 : radius.button,
+            paddingVertical: pad - (v.border ? 2 : 0),
+            paddingHorizontal: size === 'sm' ? 12 : 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            opacity: disabled ? 0.5 : 1,
+          } as ViewStyle,
+          style,
+        ];
+      }}
     >
       {loading ? (
-        <ActivityIndicator color={palette.fg} />
+        <ActivityIndicator color={v.fg} />
       ) : (
         <>
-          <Text style={[styles.buttonLabel, { color: palette.fg }]}>{label}</Text>
-          {icon ? <Icon name={icon} size={18} color={palette.fg} /> : null}
+          {left}
+          <Text
+            style={{
+              fontFamily: fonts.title,
+              fontSize,
+              color: v.fg,
+              letterSpacing: uppercase ? fontSize * 0.06 : 0,
+              textTransform: uppercase ? 'uppercase' : 'none',
+              textAlign: 'center',
+            }}
+          >
+            {label}
+          </Text>
         </>
       )}
     </Pressable>
   );
 }
 
-export function Card({
-  children,
-  style,
-  tone = 'surface',
-  onPress,
-}: {
+type CardProps = {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
-  tone?: 'surface' | 'paper' | 'forest' | 'sage' | 'champagne';
   onPress?: () => void;
-}) {
-  const bg = {
-    surface: colors.surface,
-    paper: colors.paper,
-    forest: colors.forest,
-    sage: colors.sageSoft,
-    champagne: colors.champagneSoft,
-  }[tone];
-  const content = [styles.card, { backgroundColor: bg }, tone === 'surface' && shadow, style];
-  if (!onPress) return <View style={content}>{children}</View>;
+  bg?: string;
+  borderColor?: string;
+  edge?: number;
+  dashed?: boolean;
+  radius?: number;
+};
+
+/** Card: 2px border with a 5px bottom edge. */
+export function Card({ children, style, onPress, bg = colors.card, borderColor = colors.border, edge = 5, dashed, radius: r = radius.card }: CardProps) {
+  const base: ViewStyle = {
+    backgroundColor: bg,
+    borderWidth: 2,
+    borderBottomWidth: dashed ? 2 : edge,
+    borderColor,
+    borderStyle: dashed ? 'dashed' : 'solid',
+    borderRadius: r,
+    padding: space.lg,
+  };
+  if (!onPress) return <View style={[base, style]}>{children}</View>;
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [content, pressed && { opacity: 0.9 }]}>
+    <Pressable onPress={onPress} style={({ pressed }) => [base, style, pressed && { opacity: 0.85 }]}>
       {children}
     </Pressable>
   );
 }
 
-export function Pill({ label, tone = 'sage', icon }: { label: string; tone?: 'sage' | 'champagne' | 'terracotta' | 'ink'; icon?: IconName }) {
-  const map = {
-    sage: { bg: colors.sageSoft, fg: colors.forest },
-    champagne: { bg: colors.champagneSoft, fg: '#7A6438' },
-    terracotta: { bg: colors.terracottaSoft, fg: colors.terracotta },
-    ink: { bg: 'rgba(246,241,231,0.14)', fg: colors.ivory },
-  }[tone];
+export function Chip({ label, fg, bg, size = 11 }: { label: string; fg: string; bg: string; size?: number }) {
   return (
-    <View style={[styles.pill, { backgroundColor: map.bg }]}>
-      {icon ? <Icon name={icon} size={13} color={map.fg} strokeWidth={2} /> : null}
-      <Text style={[styles.pillText, { color: map.fg }]}>{label}</Text>
+    <View style={{ backgroundColor: bg, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start' }}>
+      <Text style={{ fontFamily: fonts.game, fontSize: size, color: fg }}>{label}</Text>
     </View>
   );
 }
 
-export function ProgressBar({ value, color = colors.forest, track = colors.line }: { value: number; color?: string; track?: string }) {
+/** Chunky progress bar with an inset bottom shade on the fill. */
+export function ProgressBar({
+  value,
+  color = colors.oro,
+  shade = colors.oroDark,
+  track = colors.divider,
+  height = 16,
+}: {
+  value: number;
+  color?: string;
+  shade?: string;
+  track?: string;
+  height?: number;
+}) {
+  const pct = Math.max(0, Math.min(100, value));
   return (
-    <View style={[styles.track, { backgroundColor: track }]}>
-      <View style={[styles.bar, { width: `${Math.max(0, Math.min(100, value))}%`, backgroundColor: color }]} />
+    <View style={{ height, borderRadius: radius.pill, backgroundColor: track, overflow: 'hidden' }}>
+      {pct > 0 && (
+        <View style={{ width: `${pct}%`, height: '100%', backgroundColor: color, borderRadius: radius.pill, overflow: 'hidden' }}>
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: Math.max(3, Math.round(height / 4)), backgroundColor: shade }} />
+        </View>
+      )}
     </View>
   );
 }
 
-export function TopBar({ title, onBack, right }: { title?: string; onBack?: () => void; right?: ReactNode }) {
+/** Round route node: fill with an inset bottom shade (box-shadow: inset 0 -6px 0). */
+export function Node({
+  size = 64,
+  color,
+  shade,
+  children,
+  style,
+}: {
+  size?: number;
+  color: string;
+  shade: string;
+  children?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const h = Math.round(size * 0.94);
+  const inset = Math.max(3, Math.round(size / 10.5));
   return (
-    <View style={styles.topBar}>
-      <Pressable
-        onPress={onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/viaje')))}
-        hitSlop={12}
-        style={styles.backButton}
-        accessibilityLabel="Volver"
-      >
-        <Icon name="arrowLeft" size={20} color={colors.ink} />
-      </Pressable>
-      {title ? <T variant="label" style={{ flex: 1, textAlign: 'center' }}>{title}</T> : <View style={{ flex: 1 }} />}
-      <View style={{ width: 40, alignItems: 'flex-end' }}>{right}</View>
+    <View style={[{ width: size, height: h, borderRadius: size, backgroundColor: shade, overflow: 'hidden' }, style]}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: inset, borderRadius: size, backgroundColor: color }} />
+      <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center', paddingBottom: inset / 2 }]}>{children}</View>
     </View>
   );
 }
 
-export function Divider({ style }: { style?: StyleProp<ViewStyle> }) {
-  return <View style={[{ height: StyleSheet.hairlineWidth, backgroundColor: colors.line }, style]} />;
+export function BackButton({ onPress, kind = 'back' }: { onPress?: () => void; kind?: 'back' | 'close' }) {
+  return (
+    <Pressable
+      onPress={onPress ?? (() => (router.canGoBack() ? router.back() : router.replace('/viaje')))}
+      accessibilityLabel={kind === 'back' ? 'Volver' : 'Cerrar'}
+      hitSlop={8}
+      style={styles.back}
+    >
+      <Text style={{ fontFamily: fonts.title, fontSize: 18, color: colors.inkSoft }}>{kind === 'back' ? '←' : '✕'}</Text>
+    </Pressable>
+  );
 }
 
-export function IconBadge({ name, tone = 'sage', size = 44 }: { name: IconName; tone?: 'sage' | 'champagne' | 'forest' | 'muted'; size?: number }) {
-  const map = {
-    sage: { bg: colors.sageSoft, fg: colors.forest },
-    champagne: { bg: colors.champagneSoft, fg: '#8A6F3E' },
-    forest: { bg: colors.forest, fg: colors.ivory },
-    muted: { bg: colors.paper, fg: colors.warmGray },
-  }[tone];
+/** Victor speaking: portrait + speech bubble with a flat bottom-left corner. */
+export function MentorSays({ children, size = 56, footer }: { children: ReactNode; size?: number; footer?: ReactNode }) {
   return (
-    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: map.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon name={name} size={size * 0.48} color={map.fg} />
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
+      <Sprite name="mentor" width={size} />
+      <View style={styles.bubble}>
+        {typeof children === 'string' ? <T variant="bodyStrong" style={{ fontFamily: fonts.bold }}>{children}</T> : children}
+        {footer}
+      </View>
     </View>
   );
 }
 
-const textStyles = StyleSheet.create({
-  display: { fontFamily: fonts.serif, fontSize: 40, lineHeight: 44, color: colors.ink, letterSpacing: -0.4 },
-  title: { fontFamily: fonts.serif, fontSize: 30, lineHeight: 34, color: colors.ink, letterSpacing: -0.2 },
-  heading: { fontFamily: fonts.serif, fontSize: 22, lineHeight: 27, color: colors.ink },
-  body: { fontFamily: fonts.sans, fontSize: 15, lineHeight: 23, color: colors.inkSoft },
-  bodyStrong: { fontFamily: fonts.sansSemi, fontSize: 15, lineHeight: 22, color: colors.ink },
-  small: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.warmGray },
-  label: { fontFamily: fonts.sansSemi, fontSize: 11, lineHeight: 14, color: colors.warmGray, letterSpacing: 1.6, textTransform: 'uppercase' },
-  quote: { fontFamily: fonts.serifItalic, fontSize: 22, lineHeight: 30, color: colors.ink },
+const RowContext = createContext(false);
+
+/** Two columns on wide screens, stacked on phones. */
+export function Columns({ children, gap = space.lg, min = 760 }: { children: ReactNode; gap?: number; min?: number }) {
+  const wide = useWide(min);
+  return (
+    <RowContext.Provider value={wide}>
+      <View style={{ flexDirection: wide ? 'row' : 'column', gap, alignItems: wide ? 'flex-start' : 'stretch' }}>{children}</View>
+    </RowContext.Provider>
+  );
+}
+
+export function Column({ children, gap = space.lg }: { children: ReactNode; gap?: number }) {
+  const inRow = useContext(RowContext);
+  return <View style={[{ gap, minWidth: 0 }, inRow && { flex: 1 }]}>{children}</View>;
+}
+
+const text = StyleSheet.create({
+  title: { fontFamily: fonts.title, fontSize: 30, lineHeight: 34, color: colors.bosque },
+  h2: { fontFamily: fonts.title, fontSize: 18, lineHeight: 23, color: colors.ink },
+  body: { fontFamily: fonts.bold, fontSize: 15, lineHeight: 22, color: colors.inkSoft },
+  bodyStrong: { fontFamily: fonts.title, fontSize: 15, lineHeight: 21, color: colors.ink },
+  small: { fontFamily: fonts.bold, fontSize: 13, lineHeight: 18, color: colors.muted },
+  phrase: { fontFamily: fonts.phrase, fontSize: 22, lineHeight: 29, color: colors.ink },
 });
 
 const styles = StyleSheet.create({
-  column: { width: '100%', maxWidth: maxContentWidth, alignSelf: 'center', paddingHorizontal: space.xl },
-  footer: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line, paddingTop: space.lg },
-  footerInner: { width: '100%', maxWidth: maxContentWidth, alignSelf: 'center', paddingHorizontal: space.xl, gap: space.sm },
-  button: {
-    minHeight: 54,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    paddingHorizontal: space.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.sm,
-  },
-  buttonLabel: { fontFamily: fonts.sansSemi, fontSize: 15, letterSpacing: 0.2 },
-  card: { borderRadius: radius.lg, padding: space.xl },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    alignSelf: 'flex-start',
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  pillText: { fontFamily: fonts.sansSemi, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase' },
-  track: { height: 6, borderRadius: 3, overflow: 'hidden', width: '100%' },
-  bar: { height: '100%', borderRadius: 3 },
-  topBar: { flexDirection: 'row', alignItems: 'center', paddingVertical: space.md, marginBottom: space.sm },
-  backButton: {
+  footer: { borderTopWidth: 2, borderTopColor: colors.divider, paddingTop: 14 },
+  back: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.line,
+    alignSelf: 'flex-start',
+  },
+  bubble: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderWidth: 2,
+    borderBottomWidth: 5,
+    borderColor: colors.border,
+    borderRadius: 18,
+    borderBottomLeftRadius: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 8,
   },
 });

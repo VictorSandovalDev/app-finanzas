@@ -1,23 +1,24 @@
 import { Tabs } from 'expo-router';
+import { useWindowDimensions } from 'react-native';
 
-import { Icon } from '@/components/Icon';
-import { colors, fonts } from '@/theme/tokens';
+import { GameTabBar } from '@/components/GameTabBar';
+import { colors } from '@/theme/tokens';
 
 export default function MainLayout() {
+  const vertical = useWindowDimensions().width >= 1024;
   return (
     <Tabs
+      tabBar={(props) => <GameTabBar {...props} vertical={vertical} />}
       screenOptions={{
         headerShown: false,
-        sceneStyle: { backgroundColor: colors.ivory },
-        tabBarActiveTintColor: colors.forest,
-        tabBarInactiveTintColor: colors.warmGray,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line, height: 64, paddingTop: 6 },
-        tabBarLabelStyle: { fontFamily: fonts.sansMedium, fontSize: 11 },
+        sceneStyle: { backgroundColor: colors.bg },
+        tabBarPosition: vertical ? 'left' : 'bottom',
       }}
     >
-      <Tabs.Screen name="viaje" options={{ title: 'Mi viaje', tabBarIcon: ({ color }) => <Icon name="map" color={color as string} /> }} />
-      <Tabs.Screen name="entregables" options={{ title: 'Entregables', tabBarIcon: ({ color }) => <Icon name="doc" color={color as string} /> }} />
-      <Tabs.Screen name="perfil" options={{ title: 'Pasaporte', tabBarIcon: ({ color }) => <Icon name="passport" color={color as string} /> }} />
+      <Tabs.Screen name="viaje" options={{ title: 'Inicio' }} />
+      <Tabs.Screen name="mapa" options={{ title: 'Mapa' }} />
+      <Tabs.Screen name="mentor" options={{ title: 'Mentor' }} />
+      <Tabs.Screen name="perfil" options={{ title: 'Pasaporte' }} />
     </Tabs>
   );
 }
