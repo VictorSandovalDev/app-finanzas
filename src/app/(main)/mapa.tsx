@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
+import Svg, { Path as SvgPath } from 'react-native-svg';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Hud } from '@/components/Hud';
@@ -102,56 +103,110 @@ function Banner({ level, state, isCurrent }: { level: Level; state: JourneyState
   );
 }
 
+const GAP = 14;
+/** Rendered heights, so the trail can be drawn without measuring each node. */
+const H = { node: 60, current: 107, currentCenter: 34 + 36, badge: 68 };
+
+type Stop = { key: string; x: number; h: number; center: number; reached: boolean; el: ReactNode };
+
 function Path({ level, state, isCurrent, offset }: { level: Level; state: JourneyState; isCurrent: boolean; offset: () => number }) {
+  const [width, setWidth] = useState(0);
   const completed = state.completed.includes(level.id);
   const unlocked = state.unlocked.includes(level.id);
   const missions = getMissions(state, level.id).filter((m) => !m.optional);
   const next = missions.find((m) => !m.done);
 
-  const nodes: ReactNode[] = missions.map((m) => {
+  const stops: Stop[] = missions.map((m) => {
     const x = offset();
-    if (!unlocked) return <At key={m.id} x={x}><LockedNode /></At>;
-    if (m.done)
-      return (
-        <At key={m.id} x={x}>
+    if (unlocked && m.done)
+      return {
+        key: m.id,
+        x,
+        h: H.node,
+        center: H.node / 2,
+        reached: true,
+        el: (
           <Pressable onPress={() => router.push(m.href)} accessibilityLabel={`${m.title}: completada`}>
             <DoneNode />
           </Pressable>
-        </At>
-      );
-    if (m === next && isCurrent) return <At key={m.id} x={x}><CurrentNode onPress={() => router.push(m.href)} label={m.title} /></At>;
-    return <At key={m.id} x={x}><LockedNode /></At>;
+        ),
+      };
+    if (unlocked && m === next && isCurrent)
+      return { key: m.id, x, h: H.current, center: H.currentCenter, reached: true, el: <CurrentNode onPress={() => router.push(m.href)} label={m.title} /> };
+    return { key: m.id, x, h: H.node, center: H.node / 2, reached: false, el: <LockedNode /> };
   });
 
   if (unlocked) {
     const x = offset();
-    nodes.push(
-      completed ? (
-        <At key="seal" x={x}>
-          <Pressable onPress={() => router.push(`/logro/${level.id}`)} style={styles.sealNode} accessibilityLabel={level.achievement}>
-            <View style={{ transform: [{ rotate: '-8deg' }] }}>
-              <Sprite name="seal" width={44} />
-            </View>
-          </Pressable>
-        </At>
-      ) : (
-        <At key="reward" x={x}>
-          <View style={styles.rewardNode}>
-            <Sprite name="scroll" width={36} filter="grayscale" opacity={0.5} />
-          </View>
-        </At>
-      ),
+    stops.push(
+      completed
+        ? {
+            key: 'seal',
+            x,
+            h: H.badge,
+            center: H.badge / 2,
+            reached: true,
+            el: (
+              <Pressable onPress={() => router.push(`/logro/${level.id}`)} style={styles.sealNode} accessibilityLabel={level.achievement}>
+                <View style={{ transform: [{ rotate: '-8deg' }] }}>
+                  <Sprite name="seal" width={44} />
+                </View>
+              </Pressable>
+            ),
+          }
+        : {
+            key: 'reward',
+            x,
+            h: H.badge,
+            center: H.badge / 2,
+            reached: false,
+            el: (
+              <View style={styles.rewardNode}>
+                <Sprite name="scroll" width={36} filter="grayscale" opacity={0.5} />
+              </View>
+            ),
+          },
     );
   }
 
+  // Trail points: from the banner above, through every stop, down to the next banner.
+  let y = 0;
+  const points = stops.map((st) => {
+    const point = { x: st.x, y: y + st.center, reached: st.reached };
+    y += st.h + GAP;
+    return point;
+  });
+  const total = y - GAP;
+  const pad = 18;
+  const top = { x: 0, y: -pad, reached: unlocked };
+  const bottom = { x: 0, y: total + pad, reached: completed };
+  const all = [top, ...points, bottom];
+  const cx = width / 2;
+  const seg = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+    const midY = (a.y + b.y) / 2;
+    return `M ${cx + a.x} ${a.y + pad} C ${cx + a.x} ${midY + pad}, ${cx + b.x} ${midY + pad}, ${cx + b.x} ${b.y + pad}`;
+  };
+  const doneTrail = all.slice(1).map((b, i) => (all[i].reached && b.reached ? seg(all[i], b) : '')).join(' ');
+  const fullTrail = all.slice(1).map((b, i) => seg(all[i], b)).join(' ');
+
   return (
-    <View style={{ alignItems: 'center', gap: 14 }}>
+    <View style={{ alignItems: 'center', gap: GAP }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      {width > 0 && (
+        <Svg width={width} height={total + pad * 2} style={{ position: 'absolute', top: -pad, left: 0 }} pointerEvents="none">
+          <SvgPath d={fullTrail} stroke={colors.locked} strokeWidth={8} strokeDasharray="8 10" fill="none" />
+          {doneTrail.trim() ? <SvgPath d={doneTrail} stroke={colors.oro} strokeWidth={8} strokeDasharray="8 10" fill="none" /> : null}
+        </Svg>
+      )}
       {isCurrent && (
         <View style={{ position: 'absolute', right: 0, top: 30 }}>
           <Sprite name={level.sprite} width={96} opacity={0.9} />
         </View>
       )}
-      {nodes}
+      {stops.map((st) => (
+        <At key={st.key} x={st.x}>
+          {st.el}
+        </At>
+      ))}
     </View>
   );
 }
