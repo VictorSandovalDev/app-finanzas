@@ -1,67 +1,81 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { GroupCard } from '@/components/GroupCard';
-import { Hud } from '@/components/Hud';
-import { Bob } from '@/components/motion';
-import { Sprite } from '@/components/Sprite';
-import { Card, ChunkyButton, Column, Columns, GameLabel, ProgressBar, Screen, T } from '@/components/ui';
-import { formatCOP, getLevel, LevelId } from '@/data/levels';
+import { GroupRow } from '@/components/GroupCard';
+import { Icon } from '@/components/Icon';
+import { FadeUp } from '@/components/motion';
+import { Button, Column, Columns, Divider, Emblem, Progress, Screen, SectionTitle, Surface, T, Tag } from '@/components/ui';
+import { formatCOP, LEVELS, LevelId } from '@/data/levels';
 import { useJourney } from '@/state/journey';
 import {
   getCurrentLevel,
   getDeliverables,
-  getJourneyProgress,
   getMissions,
   getNextLockedLevel,
+  getNextMission,
   getNextMissionHref,
   getStreak,
+  getTotalXp,
   getWeek,
-  STATION_XP,
 } from '@/state/missions';
-import { colors, fonts, radius } from '@/theme/tokens';
+import { colors, fonts } from '@/theme/tokens';
 
-export default function Dashboard() {
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+}
+
+export default function Home() {
   const { state } = useJourney();
   const current = getCurrentLevel(state);
   const next = getNextLockedLevel(state);
-  const lastAchievement = state.achievements[state.achievements.length - 1];
+  const streak = getStreak(state);
+  const today = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
-    <Screen header={<Hud />} edgeToEdge>
-      <T variant="title">¡Hola{state.name ? `, ${state.name}` : ''}!</T>
+    <Screen maxWidth={1040}>
+      <FadeUp style={{ gap: 10, paddingTop: 8 }}>
+        <T variant="label" style={{ color: colors.muted }}>{today}</T>
+        <T variant="display">
+          {greeting()}
+          {state.name ? `, ${state.name}` : ''}
+        </T>
+        <View style={styles.stats}>
+          <Stat icon="flame" value={`${streak} ${streak === 1 ? 'día' : 'días'}`} label="de racha" />
+          <View style={styles.statSep} />
+          <Stat icon="diamond" value={`${getTotalXp(state)}`} label="XP" />
+          <View style={styles.statSep} />
+          <Stat icon="compass" value={`${current?.id ?? Math.max(1, state.completed.length)} de ${LEVELS.length}`} label="estaciones" />
+        </View>
+      </FadeUp>
+
       <Columns>
         <Column>
-          <Hero />
-          <StreakCard />
-          {current?.whatsappUrl ? <GroupCard level={current} /> : null}
+          <FadeUp delay={120}>
+            <CurrentStation />
+          </FadeUp>
+          <Week />
+          {current?.whatsappUrl ? (
+            <View style={{ gap: 14 }}>
+              <SectionTitle title="Acompañamiento" />
+              <GroupRow level={current} />
+            </View>
+          ) : null}
         </Column>
         <Column>
-          {lastAchievement && (
-            <Card onPress={() => router.push(`/logro/${lastAchievement.levelId}`)} style={styles.row}>
-              <View style={{ transform: [{ rotate: '-8deg' }] }}>
-                <Sprite name="seal" width={56} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <GameLabel size={11} color={colors.lacre}>ÚLTIMO LOGRO</GameLabel>
-                <T variant="bodyStrong" style={{ fontSize: 16 }}>{lastAchievement.title}</T>
-                <T variant="small">Estación {lastAchievement.levelId} · +{STATION_XP} XP</T>
-              </View>
-            </Card>
-          )}
-          <Inventory />
+          <Deliverables />
           {next?.available && current && (
-            <Card style={styles.row}>
-              <View style={styles.nextArt}>
-                <Sprite name={next.sprite} width={48} filter="silhouette" opacity={0.2} />
-                <Sprite name="lock" width={24} style={{ position: 'absolute', right: -6, bottom: -6 }} />
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <GameLabel size={11} color={colors.muted}>SIGUIENTE · EST. {next.id}</GameLabel>
-                <T variant="bodyStrong" style={{ fontSize: 16 }}>{next.title}</T>
-              </View>
-              <ChunkyButton label={formatCOP(next.price)} variant="brasa" size="sm" uppercase={false} onPress={() => router.push(`/nivel/${next.id}`)} />
-            </Card>
+            <View style={{ gap: 14 }}>
+              <SectionTitle title="Siguiente estación" />
+              <Pressable onPress={() => router.push(`/nivel/${next.id}`)} style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
+                <Emblem icon={next.icon} tone="locked" />
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <T variant="small">Estación {next.id} · {next.stage}</T>
+                  <T variant="bodyStrong" numberOfLines={1}>{next.title}</T>
+                </View>
+                <Tag label={formatCOP(next.price)} icon="lock" />
+              </Pressable>
+            </View>
           )}
         </Column>
       </Columns>
@@ -69,153 +83,130 @@ export default function Dashboard() {
   );
 }
 
-function Hero() {
+function Stat({ icon, value, label }: { icon: 'flame' | 'diamond' | 'compass'; value: string; label: string }) {
+  return (
+    <View style={styles.stat}>
+      <Icon name={icon} size={16} color={colors.brass} weight="regular" />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function CurrentStation() {
   const { state } = useJourney();
   const current = getCurrentLevel(state);
   const next = getNextLockedLevel(state);
 
   if (!current) {
-    const level = next ?? getLevel(6)!;
+    const level = next ?? LEVELS[LEVELS.length - 1];
     const ready = !next || next.id === 1 || state.completed.includes((next.id - 1) as LevelId);
     return (
-      <View style={styles.hero}>
-        <Bob duration={2400} style={styles.heroSprite}>
-          <Sprite name={level.sprite} width={80} />
-        </Bob>
-        <GameLabel color={colors.oro}>ESTACIÓN {level.id} · {level.stage.toUpperCase()}</GameLabel>
-        <Text style={styles.heroTitle}>{next ? level.title : '¡Completaste las estaciones disponibles!'}</Text>
+      <Surface tone="forest" style={{ gap: 18 }}>
+        <T variant="label" style={{ color: colors.brassSoft }}>
+          {next ? `Estación ${level.id} · ${level.stage}` : 'Viaje al día'}
+        </T>
+        <T variant="title" style={{ color: colors.onDark }}>
+          {next ? level.title : 'Completaste las estaciones disponibles'}
+        </T>
         {next?.available && ready ? (
-          <ChunkyButton label={`Desbloquear · ${formatCOP(next.price)}`} variant="brasa" onPress={() => router.push(`/nivel/${next.id}`)} />
+          <Button label={`Desbloquear por ${formatCOP(next.price)}`} variant="light" icon="arrowRight" onPress={() => router.push(`/nivel/${next.id}`)} />
         ) : (
-          <ChunkyButton label="Ver mi pasaporte" variant="oro" onPress={() => router.push('/perfil')} />
+          <Button label="Ver mi pasaporte" variant="light" icon="arrowRight" onPress={() => router.push('/perfil')} />
         )}
-      </View>
+      </Surface>
     );
   }
 
   const missions = getMissions(state, current.id).filter((m) => !m.optional);
   const done = missions.filter((m) => m.done).length;
+  const mission = getNextMission(state);
   return (
-    <View style={styles.hero}>
-      <Bob duration={2400} style={styles.heroSprite}>
-        <Sprite name={current.sprite} width={80} />
-      </Bob>
-      <GameLabel color={colors.oro}>ESTACIÓN {current.id} · {current.stage.toUpperCase()}</GameLabel>
-      <Text style={styles.heroTitle}>{current.title}</Text>
-      <View style={{ gap: 6 }}>
-        <ProgressBar value={(done / missions.length) * 100} track="rgba(11,61,46,0.5)" />
-        <Text style={styles.heroMeta}>
-          {done} de {missions.length} misiones · {getJourneyProgress(state)}% del viaje
-        </Text>
+    <Surface tone="forest" style={{ gap: 18 }}>
+      <View style={{ gap: 8 }}>
+        <T variant="label" style={{ color: colors.brassSoft }}>Estación {current.id} · {current.stage}</T>
+        <T variant="title" style={{ color: colors.onDark }}>{current.title}</T>
       </View>
-      <ChunkyButton label="Continuar mi misión" variant="oro" onPress={() => router.push(getNextMissionHref(state))} />
+      <View style={{ gap: 8 }}>
+        <Progress value={(done / missions.length) * 100} color={colors.brass} track="rgba(244,241,233,0.16)" />
+        <T variant="small" style={{ color: colors.onDarkMuted }}>
+          {done} de {missions.length} misiones{mission ? ` · Sigue: ${mission.title}` : ' · Lista para completar'}
+        </T>
+      </View>
+      <Button label="Continuar mi misión" variant="light" icon="arrowRight" onPress={() => router.push(getNextMissionHref(state))} />
+    </Surface>
+  );
+}
+
+function Week() {
+  const { state } = useJourney();
+  const streak = getStreak(state);
+  return (
+    <View style={{ gap: 14 }}>
+      <SectionTitle title="Esta semana" />
+      <View style={styles.week}>
+        {getWeek(state).map((d, i) => (
+          <View key={i} style={{ alignItems: 'center', gap: 8, flex: 1 }}>
+            <Text style={[styles.day, d.state === 'today' && { color: colors.ink }]}>{d.label}</Text>
+            <View
+              style={[
+                styles.dayDot,
+                d.state === 'done' && { backgroundColor: colors.forest, borderColor: colors.forest },
+                d.state === 'today' && { borderColor: colors.forest },
+              ]}
+            >
+              {d.state === 'done' ? <Icon name="check" size={12} color={colors.onDark} weight="bold" /> : null}
+            </View>
+          </View>
+        ))}
+      </View>
+      <T variant="small">
+        {streak > 0 ? `Llevas ${streak} ${streak === 1 ? 'día' : 'días'} seguidos avanzando.` : 'Avanza hoy en una misión para empezar tu racha.'}
+      </T>
     </View>
   );
 }
 
-function StreakCard() {
+function Deliverables() {
   const { state } = useJourney();
-  const streak = getStreak(state);
+  const items = getDeliverables(state);
   return (
-    <Card style={{ gap: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <Sprite name="lantern" width={36} />
-        <View>
-          <Text style={styles.streak}>
-            {streak} {streak === 1 ? 'día' : 'días'} de racha
-          </Text>
-          <T variant="small">{streak > 0 ? 'Tu farol sigue encendido' : 'Avanza hoy para encender tu farol'}</T>
-        </View>
-      </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        {getWeek(state).map((d, i) => (
-          <View key={i} style={{ alignItems: 'center', gap: 4, flex: 1 }}>
-            <Text style={[styles.dayLabel, d.state === 'today' && { color: colors.brasa, fontFamily: fonts.title }]}>{d.label}</Text>
-            {d.state === 'done' ? (
-              <View style={[styles.dayDot, { backgroundColor: colors.oroDark }]}>
-                <View style={[styles.dayFill, { backgroundColor: colors.oro }]} />
-              </View>
-            ) : d.state === 'today' ? (
-              <View style={[styles.dayDot, { borderWidth: 3, borderStyle: 'dashed', borderColor: colors.brasa }]} />
-            ) : (
-              <View style={[styles.dayDot, { backgroundColor: colors.divider }]} />
-            )}
-          </View>
-        ))}
-      </View>
-    </Card>
-  );
-}
-
-function Inventory() {
-  const { state } = useJourney();
-  return (
-    <Card style={{ gap: 12 }}>
-      <GameLabel>INVENTARIO · ENTREGABLES</GameLabel>
-      <View style={styles.grid}>
-        {getDeliverables(state).map((d) => {
-          const unlocked = state.unlocked.includes(d.levelId);
-          const kind = d.ready ? 'ready' : unlocked ? 'progress' : 'locked';
-          return (
+    <View style={{ gap: 6 }}>
+      <SectionTitle title="Entregables" />
+      {items.map((d, i) => {
+        const unlocked = state.unlocked.includes(d.levelId);
+        return (
+          <View key={d.id}>
+            {i > 0 && <Divider />}
             <Pressable
-              key={d.id}
               onPress={() => router.push(d.ready ? d.href : `/nivel/${d.levelId}`)}
-              style={[styles.item, kind === 'ready' ? styles.itemReady : kind === 'progress' ? styles.itemProgress : styles.itemLocked]}
+              style={({ pressed }) => [styles.row, { paddingVertical: 12 }, pressed && { opacity: 0.7 }]}
             >
-              {kind === 'locked' ? (
-                <Sprite name="lock" width={30} filter="grayscale" opacity={0.6} />
-              ) : (
-                <Sprite name={d.sprite} width={kind === 'ready' ? 42 : 40} opacity={kind === 'ready' ? 1 : 0.55} />
-              )}
-              <Text style={[styles.itemText, kind === 'progress' && { color: colors.verde }, kind === 'locked' && { color: colors.muted }]}>
-                {d.title}
-                {kind === 'progress' ? ' · en curso' : ''}
-              </Text>
+              <Icon name={d.icon} size={22} color={d.ready ? colors.forest : colors.muted} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <T variant="bodyStrong" numberOfLines={1} style={!d.ready && { color: colors.inkSoft }}>
+                  {d.title}
+                </T>
+                <T variant="small">{d.ready ? 'Listo para consultar' : unlocked ? 'En curso' : `Estación ${d.levelId}`}</T>
+              </View>
+              {d.ready ? <Tag label="Listo" tone="forest" /> : !unlocked ? <Icon name="lock" size={16} color={colors.muted} /> : null}
+              <Icon name="caretRight" size={16} color={colors.muted} />
             </Pressable>
-          );
-        })}
-      </View>
-    </Card>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  stats: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 12, paddingTop: 4 },
+  stat: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statValue: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.ink, fontVariant: ['tabular-nums'] },
+  statLabel: { fontFamily: fonts.sans, fontSize: 14, color: colors.muted },
+  statSep: { width: 1, height: 14, backgroundColor: colors.line },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  hero: {
-    backgroundColor: colors.verde,
-    borderBottomWidth: 6,
-    borderBottomColor: colors.bosque,
-    borderRadius: radius.hero,
-    padding: 20,
-    gap: 14,
-    overflow: 'hidden',
-  },
-  heroSprite: { position: 'absolute', right: 14, top: 14 },
-  heroTitle: { fontFamily: fonts.title, fontSize: 26, lineHeight: 29, color: colors.bg, maxWidth: '62%' },
-  heroMeta: { fontFamily: fonts.heavy, fontSize: 13, color: colors.verdeTint },
-  streak: { fontFamily: fonts.title, fontSize: 18, color: colors.brasa },
-  dayLabel: { fontFamily: fonts.heavy, fontSize: 11, color: colors.muted },
-  dayDot: { width: 28, height: 28, borderRadius: 14, overflow: 'hidden' },
-  dayFill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 3, borderRadius: 14 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  item: {
-    width: '47%',
-    flexGrow: 1,
-    borderRadius: 14,
-    padding: 12,
-    alignItems: 'center',
-    gap: 6,
-  },
-  itemReady: { backgroundColor: colors.oroTint, borderWidth: 2, borderBottomWidth: 4, borderColor: colors.oro },
-  itemProgress: { backgroundColor: colors.card, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.verde },
-  itemLocked: { backgroundColor: colors.divider, borderWidth: 2, borderBottomWidth: 4, borderColor: colors.locked },
-  itemText: { fontFamily: fonts.heavy, fontSize: 12, lineHeight: 15, textAlign: 'center', color: colors.ink },
-  nextArt: {
-    width: 72,
-    height: 72,
-    borderRadius: 18,
-    backgroundColor: colors.divider,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  week: { flexDirection: 'row' },
+  day: { fontFamily: fonts.sansMedium, fontSize: 12, color: colors.muted },
+  dayDot: { width: 22, height: 22, borderRadius: 11, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
 });

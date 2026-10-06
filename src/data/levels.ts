@@ -1,4 +1,4 @@
-import { SpriteName } from '@/components/Sprite';
+import { IconName } from '@/components/Icon';
 
 export type LevelId = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -14,8 +14,8 @@ export type Level = {
   duration: string;
   deliverable: string;
   achievement: string;
-  /** Pixel sprite emblem for the station. */
-  sprite: SpriteName;
+  /** Station emblem. */
+  icon: IconName;
   learn: string[];
   whatsappUrl: string;
   /** Who leads the private group and when it meets. */
@@ -37,7 +37,7 @@ export const LEVELS: Level[] = [
     duration: '1 semana',
     deliverable: 'Mapa Personal de Transformación',
     achievement: 'Conciencia financiera desbloqueada',
-    sprite: 'compass',
+    icon: 'compass',
     learn: [
       'Identificar el pensamiento que hoy guía tus decisiones',
       'Reconocer la creencia y la emoción detrás de él',
@@ -60,7 +60,7 @@ export const LEVELS: Level[] = [
     duration: '1 semana',
     deliverable: 'Mapa del Dinero',
     achievement: 'Entendimiento financiero desbloqueado',
-    sprite: 'sprout',
+    icon: 'plant',
     learn: [
       'Dinero que entra y dinero que sale',
       'Ingreso, gasto, deuda y ahorro sin tecnicismos',
@@ -83,7 +83,7 @@ export const LEVELS: Level[] = [
     duration: '1 semana',
     deliverable: 'Mi Número de Independencia',
     achievement: 'Conozco el costo de mi vida',
-    sprite: 'door',
+    icon: 'door',
     learn: [
       'El recorrido hacia la independencia económica',
       'Tus necesidades esenciales, una por una',
@@ -105,7 +105,7 @@ export const LEVELS: Level[] = [
     duration: '1 semana',
     deliverable: 'Mi Plan Mensual',
     achievement: 'Orden financiero desbloqueado',
-    sprite: 'map',
+    icon: 'map',
     learn: [],
     whatsappUrl: '',
     groupHost: 'Martina acompaña el grupo',
@@ -122,7 +122,7 @@ export const LEVELS: Level[] = [
     duration: '1 semana',
     deliverable: 'Mi Brújula de Decisiones',
     achievement: 'Dirección financiera desbloqueada',
-    sprite: 'flag',
+    icon: 'signpost',
     learn: [],
     whatsappUrl: '',
     groupHost: 'Martina acompaña el grupo',
@@ -139,7 +139,7 @@ export const LEVELS: Level[] = [
     duration: '2 semanas',
     deliverable: 'Mi Plan de Futuro',
     achievement: 'Constructor de futuro',
-    sprite: 'house',
+    icon: 'house',
     learn: [],
     whatsappUrl: '',
     groupHost: 'Martina acompaña el grupo',

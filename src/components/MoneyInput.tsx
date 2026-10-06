@@ -5,24 +5,12 @@ import { colors, fonts } from '@/theme/tokens';
 
 const format = (n: number) => (n ? n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '');
 
-export function MoneyInput({
-  label,
-  hint,
-  value,
-  onChange,
-  compact = false,
-}: {
-  label: string;
-  hint?: string;
-  value: number;
-  onChange: (n: number) => void;
-  compact?: boolean;
-}) {
+export function MoneyInput({ label, hint, value, onChange }: { label: string; hint?: string; value: number; onChange: (n: number) => void }) {
   return (
-    <View style={[styles.row, compact && { paddingVertical: 8 }]}>
-      <View style={{ flex: 1 }}>
-        <T variant="bodyStrong" style={{ fontSize: compact ? 14 : 15 }}>{label}</T>
-        {hint ? <T variant="small" style={{ fontSize: 12 }}>{hint}</T> : null}
+    <View style={styles.row}>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <T variant="bodyStrong" numberOfLines={1}>{label}</T>
+        {hint ? <T variant="small" numberOfLines={1}>{hint}</T> : null}
       </View>
       <View style={styles.field}>
         <Text style={styles.prefix}>$</Text>
@@ -31,7 +19,7 @@ export function MoneyInput({
           onChangeText={(t) => onChange(Number(t.replace(/\D/g, '').slice(0, 12)) || 0)}
           keyboardType="number-pad"
           placeholder="0"
-          placeholderTextColor={colors.lockedDark}
+          placeholderTextColor={colors.line}
           style={styles.input}
           accessibilityLabel={label}
         />
@@ -41,26 +29,25 @@ export function MoneyInput({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
   field: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 150,
-    backgroundColor: colors.card,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 12,
+    width: 144,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
   },
-  prefix: { fontFamily: fonts.heavy, fontSize: 15, color: colors.muted },
+  prefix: { fontFamily: fonts.sans, fontSize: 16, color: colors.muted },
   input: {
     flex: 1,
-    paddingVertical: 10,
+    minWidth: 0,
+    paddingVertical: 8,
     paddingLeft: 4,
     textAlign: 'right',
-    fontFamily: fonts.title,
-    fontSize: 15,
+    fontFamily: fonts.sansSemi,
+    fontSize: 16,
     color: colors.ink,
+    fontVariant: ['tabular-nums'],
     outlineStyle: 'none',
   } as object,
 });

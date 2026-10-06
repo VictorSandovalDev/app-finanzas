@@ -3,70 +3,68 @@ import { Animated, Easing, StyleProp, ViewStyle } from 'react-native';
 
 import { useNativeDriver } from '@/theme/tokens';
 
-/** A 0→1 value that loops forever. */
-export function useLoop(duration: number, delay = 0) {
-  const [v] = useState(() => new Animated.Value(0));
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.timing(v, { toValue: 1, duration, easing: Easing.linear, useNativeDriver }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [v, duration, delay]);
-  return v;
-}
+const EASE_OUT = Easing.out(Easing.cubic);
 
-/** A 0→1 value that plays once after `delay`. */
+/** A 0→1 Animated value that plays once after `delay`. */
 export function useOnce(duration: number, delay = 0) {
   const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
-    const anim = Animated.timing(v, { toValue: 1, duration, delay, easing: Easing.linear, useNativeDriver });
+    const anim = Animated.timing(v, { toValue: 1, duration, delay, easing: EASE_OUT, useNativeDriver });
     anim.start();
     return () => anim.stop();
   }, [v, duration, delay]);
   return v;
 }
 
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
 /**
- * CSS `steps(n)`: holds each keyframe value instead of tweening.
- * `frames` are the values shown at t = 0, 1/n, 2/n …
+ * A 0→1 number driven by requestAnimationFrame, for animating SVG attributes
+ * (Animated SVG props are unreliable on web).
  */
-export function stepped(v: Animated.Value, frames: number[]) {
-  const n = frames.length;
-  const inputRange: number[] = [];
-  const outputRange: number[] = [];
-  frames.forEach((f, i) => {
-    inputRange.push(i / n, (i + 1) / n - 0.0001);
-    outputRange.push(f, f);
-  });
-  inputRange.push(1);
-  outputRange.push(frames[n - 1]);
-  return v.interpolate({ inputRange, outputRange });
+export function useProgress(duration: number, delay = 0) {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    let frame = 0;
+    let start: number | undefined;
+    const timer = setTimeout(() => {
+      const tick = (now: number) => {
+        start ??= now;
+        const t = Math.min(1, (now - start) / duration);
+        setP(easeInOutCubic(t));
+        if (t < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }, delay);
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(frame);
+    };
+  }, [duration, delay]);
+  return p;
 }
 
-/** vfBob: floats 6px up and back in discrete steps. */
-export function Bob({ children, duration = 2000, steps = 4, amplitude = 6, style }: { children: ReactNode; duration?: number; steps?: number; amplitude?: number; style?: StyleProp<ViewStyle> }) {
-  const v = useLoop(duration);
-  const frames = Array.from({ length: steps }, (_, i) => -amplitude * Math.sin((Math.PI * i) / steps));
-  return <Animated.View style={[style, { transform: [{ translateY: stepped(v, frames) }] }]}>{children}</Animated.View>;
+/** A 0→1→0 value that breathes forever. */
+export function useBreath(duration: number) {
+  const [v] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(v, { toValue: 1, duration: duration / 2, easing: Easing.inOut(Easing.sin), useNativeDriver }),
+        Animated.timing(v, { toValue: 0, duration: duration / 2, easing: Easing.inOut(Easing.sin), useNativeDriver }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [v, duration]);
+  return v;
 }
 
-/** vfPop: 0.4 → 1.12 → 1 scale with fade, in steps, after a delay. */
-export function Pop({ children, delay = 0, duration = 500, style }: { children: ReactNode; delay?: number; duration?: number; style?: StyleProp<ViewStyle> }) {
+/** Fades in while rising a few pixels. */
+export function FadeUp({ children, delay = 0, duration = 520, distance = 10, style }: { children: ReactNode; delay?: number; duration?: number; distance?: number; style?: StyleProp<ViewStyle> }) {
   const v = useOnce(duration, delay);
   return (
-    <Animated.View
-      style={[
-        style,
-        {
-          opacity: stepped(v, [0, 0.5, 1, 1, 1]),
-          transform: [{ scale: stepped(v, [0.4, 0.75, 1.12, 1.04, 1]) }],
-        },
-      ]}
-    >
+    <Animated.View style={[style, { opacity: v, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }) }] }]}>
       {children}
     </Animated.View>
   );

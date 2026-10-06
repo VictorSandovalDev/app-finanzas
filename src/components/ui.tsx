@@ -3,29 +3,28 @@ import { createContext, ReactNode, useContext } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleProp,
   StyleSheet,
   Text,
   TextProps,
-  TextStyle,
   useWindowDimensions,
   View,
   ViewStyle,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Sprite } from '@/components/Sprite';
+import { Icon, IconName } from '@/components/Icon';
 import { colors, fonts, maxContentWidth, radius, space } from '@/theme/tokens';
 
-/** Horizontal page padding: clamp(16px, 3cqw, 40px). */
+/** Horizontal page padding. */
 export function useGutter() {
   const { width } = useWindowDimensions();
-  return Math.min(40, Math.max(16, width * 0.03));
+  return width < 380 ? 20 : 24;
 }
 
-/** True on wide (web/tablet) layouts, where the design switches to two columns. */
-export function useWide(breakpoint = 760) {
+/** True on wide (web/tablet) layouts, where some screens use two columns. */
+export function useWide(breakpoint = 860) {
   return useWindowDimensions().width >= breakpoint;
 }
 
@@ -33,49 +32,37 @@ type ScreenProps = {
   children: ReactNode;
   scroll?: boolean;
   background?: string;
-  /** Sticky content above the scroll area (e.g. the HUD). */
-  header?: ReactNode;
-  /** Sticky bar at the bottom. */
+  /** Sticky bar at the bottom (stays above the keyboard). */
   footer?: ReactNode;
   maxWidth?: number;
   contentStyle?: StyleProp<ViewStyle>;
-  /** Skip the top safe-area inset (when a header already handles it). */
-  edgeToEdge?: boolean;
 };
 
-export function Screen({
-  children,
-  scroll = true,
-  background = colors.bg,
-  header,
-  footer,
-  maxWidth = maxContentWidth,
-  contentStyle,
-  edgeToEdge,
-}: ScreenProps) {
+/** Page container. Scrolls the focused input into view when the keyboard opens. */
+export function Screen({ children, scroll = true, background = colors.bg, footer, maxWidth = maxContentWidth, contentStyle }: ScreenProps) {
   const insets = useSafeAreaInsets();
   const gutter = useGutter();
   const inner = (
-    <View style={[{ width: '100%', maxWidth, alignSelf: 'center', paddingHorizontal: gutter, gap: space.lg }, contentStyle]}>
+    <View style={[{ width: '100%', maxWidth, alignSelf: 'center', paddingHorizontal: gutter, gap: space.xl }, contentStyle]}>
       {children}
     </View>
   );
   return (
-    <View style={{ flex: 1, backgroundColor: background, paddingTop: edgeToEdge ? 0 : insets.top }}>
-      {header}
+    <View style={{ flex: 1, backgroundColor: background, paddingTop: insets.top }}>
       {scroll ? (
-        <ScrollView
-          contentContainerStyle={{ paddingTop: space.lg, paddingBottom: footer ? space.xl : insets.bottom + space.xxxl }}
+        <KeyboardAwareScrollView
+          bottomOffset={24}
+          contentContainerStyle={{ paddingTop: space.lg, paddingBottom: space.xxxl }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {inner}
-        </ScrollView>
+        </KeyboardAwareScrollView>
       ) : (
         <View style={{ flex: 1 }}>{inner}</View>
       )}
       {footer ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + 18, backgroundColor: background }]}>
+        <View style={[styles.footer, { backgroundColor: background }]}>
           <View style={{ width: '100%', maxWidth, alignSelf: 'center', paddingHorizontal: gutter, gap: space.sm }}>{footer}</View>
         </View>
       ) : null}
@@ -83,209 +70,164 @@ export function Screen({
   );
 }
 
-type Variant = 'title' | 'h2' | 'body' | 'bodyStrong' | 'small' | 'phrase';
+type Variant = 'display' | 'title' | 'heading' | 'body' | 'bodyStrong' | 'small' | 'label' | 'quote';
 
 export function T({ variant = 'body', style, ...rest }: TextProps & { variant?: Variant }) {
   return <Text {...rest} style={[text[variant], style]} />;
 }
 
-/** Silkscreen label — short game texts only. */
-export function GameLabel({ children, color = colors.inkSoft, size = 12, style }: { children: ReactNode; color?: string; size?: number; style?: StyleProp<TextStyle> }) {
-  return <Text style={[{ fontFamily: fonts.game, fontSize: size, color, lineHeight: size * 1.35 }, style]}>{children}</Text>;
-}
-
-export type ButtonVariant = 'verde' | 'oro' | 'brasa' | 'lacre' | 'secondary' | 'outlineDark' | 'bosque';
-
-const BUTTON: Record<ButtonVariant, { bg: string; fg: string; shade: string; border?: string }> = {
-  verde: { bg: colors.verde, fg: colors.bg, shade: colors.bosque },
-  oro: { bg: colors.oro, fg: colors.bosque, shade: colors.oroDark },
-  brasa: { bg: colors.brasa, fg: colors.bg, shade: colors.lacre },
-  lacre: { bg: colors.lacre, fg: colors.bg, shade: colors.lacreDark },
-  bosque: { bg: colors.bosque, fg: colors.bg, shade: colors.bosqueDeep },
-  secondary: { bg: colors.card, fg: colors.verde, shade: colors.border, border: colors.border },
-  outlineDark: { bg: 'transparent', fg: colors.bg, shade: 'rgba(251,248,242,0.3)', border: 'rgba(251,248,242,0.3)' },
-};
-
 type ButtonProps = {
   label: string;
   onPress?: () => void;
-  variant?: ButtonVariant;
-  size?: 'lg' | 'md' | 'sm';
+  variant?: 'primary' | 'secondary' | 'quiet' | 'quietLight' | 'light' | 'danger';
+  icon?: IconName;
   loading?: boolean;
   disabled?: boolean;
-  uppercase?: boolean;
-  left?: ReactNode;
+  compact?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-/** "Botón con volumen": a 5px bottom edge that sinks 3px when pressed. */
-export function ChunkyButton({ label, onPress, variant = 'verde', size = 'lg', loading, disabled, uppercase = true, left, style }: ButtonProps) {
+const BUTTON = {
+  primary: { bg: colors.forest, fg: colors.onDark, border: colors.forest },
+  secondary: { bg: 'transparent', fg: colors.forest, border: colors.line },
+  quiet: { bg: 'transparent', fg: colors.inkSoft, border: 'transparent' },
+  quietLight: { bg: 'transparent', fg: colors.onDarkMuted, border: 'transparent' },
+  light: { bg: colors.onDark, fg: colors.forestDeep, border: colors.onDark },
+  danger: { bg: colors.umber, fg: colors.onDark, border: colors.umber },
+};
+
+export function Button({ label, onPress, variant = 'primary', icon, loading, disabled, compact, style }: ButtonProps) {
   const v = BUTTON[variant];
-  const edge = size === 'sm' ? 4 : 5;
-  const pad = size === 'lg' ? 16 : size === 'md' ? 13 : 10;
-  const fontSize = size === 'lg' ? 16 : size === 'md' ? 15 : 13;
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled || loading}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={({ pressed }) => {
-        const sunk = pressed && !disabled ? edge - 2 : 0;
-        return [
-          {
-            backgroundColor: v.bg,
-            borderColor: v.border ?? v.shade,
-            borderWidth: v.border ? 2 : 0,
-            borderBottomWidth: edge - sunk,
-            borderBottomColor: v.shade,
-            marginTop: sunk,
-            borderRadius: size === 'sm' ? 14 : radius.button,
-            paddingVertical: pad - (v.border ? 2 : 0),
-            paddingHorizontal: size === 'sm' ? 12 : 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            opacity: disabled ? 0.5 : 1,
-          } as ViewStyle,
-          style,
-        ];
-      }}
+      style={({ pressed }) => [
+        styles.button,
+        compact && styles.buttonCompact,
+        { backgroundColor: v.bg, borderColor: v.border, opacity: disabled ? 0.4 : pressed ? 0.82 : 1 },
+        style,
+      ]}
     >
       {loading ? (
         <ActivityIndicator color={v.fg} />
       ) : (
         <>
-          {left}
-          <Text
-            style={{
-              fontFamily: fonts.title,
-              fontSize,
-              color: v.fg,
-              letterSpacing: uppercase ? fontSize * 0.06 : 0,
-              textTransform: uppercase ? 'uppercase' : 'none',
-              textAlign: 'center',
-            }}
-          >
+          <Text style={[styles.buttonLabel, compact && { fontSize: 14 }, { color: v.fg }]} numberOfLines={1}>
             {label}
           </Text>
+          {icon ? <Icon name={icon} size={compact ? 16 : 18} color={v.fg} weight="regular" /> : null}
         </>
       )}
     </Pressable>
   );
 }
 
-type CardProps = {
-  children: ReactNode;
-  style?: StyleProp<ViewStyle>;
-  onPress?: () => void;
-  bg?: string;
-  borderColor?: string;
-  edge?: number;
-  dashed?: boolean;
-  radius?: number;
-};
-
-/** Card: 2px border with a 5px bottom edge. */
-export function Card({ children, style, onPress, bg = colors.card, borderColor = colors.border, edge = 5, dashed, radius: r = radius.card }: CardProps) {
-  const base: ViewStyle = {
-    backgroundColor: bg,
-    borderWidth: 2,
-    borderBottomWidth: dashed ? 2 : edge,
-    borderColor,
-    borderStyle: dashed ? 'dashed' : 'solid',
-    borderRadius: r,
-    padding: space.lg,
-  };
-  if (!onPress) return <View style={[base, style]}>{children}</View>;
+/** A quiet surface. Use only to set one block apart, not for every section. */
+export function Surface({ children, style, onPress, tone = 'surface' }: { children: ReactNode; style?: StyleProp<ViewStyle>; onPress?: () => void; tone?: 'surface' | 'forest' | 'brass' | 'sunken' }) {
+  const bg = { surface: colors.surface, forest: colors.forest, brass: colors.brassSoft, sunken: colors.sunken }[tone];
+  const base = [styles.surface, { backgroundColor: bg }, tone === 'surface' && styles.surfaceBorder, style];
+  if (!onPress) return <View style={base}>{children}</View>;
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [base, style, pressed && { opacity: 0.85 }]}>
+    <Pressable onPress={onPress} style={({ pressed }) => [base, pressed && { opacity: 0.88 }]}>
       {children}
     </Pressable>
   );
 }
 
-export function Chip({ label, fg, bg, size = 11 }: { label: string; fg: string; bg: string; size?: number }) {
+export function Divider({ style }: { style?: StyleProp<ViewStyle> }) {
+  return <View style={[{ height: StyleSheet.hairlineWidth, backgroundColor: colors.line }, style]} />;
+}
+
+/** Thin progress line. */
+export function Progress({ value, color = colors.forest, track = colors.lineSoft, height = 4 }: { value: number; color?: string; track?: string; height?: number }) {
   return (
-    <View style={{ backgroundColor: bg, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start' }}>
-      <Text style={{ fontFamily: fonts.game, fontSize: size, color: fg }}>{label}</Text>
+    <View style={{ height, borderRadius: height, backgroundColor: track, overflow: 'hidden' }}>
+      <View style={{ width: `${Math.max(0, Math.min(100, value))}%`, height: '100%', borderRadius: height, backgroundColor: color }} />
     </View>
   );
 }
 
-/** Chunky progress bar with an inset bottom shade on the fill. */
-export function ProgressBar({
-  value,
-  color = colors.oro,
-  shade = colors.oroDark,
-  track = colors.divider,
-  height = 16,
-}: {
-  value: number;
-  color?: string;
-  shade?: string;
-  track?: string;
-  height?: number;
-}) {
-  const pct = Math.max(0, Math.min(100, value));
+export function Tag({ label, tone = 'neutral', icon }: { label: string; tone?: 'neutral' | 'forest' | 'brass' | 'umber' | 'onDark'; icon?: IconName }) {
+  const map = {
+    neutral: { bg: colors.sunken, fg: colors.inkSoft },
+    forest: { bg: colors.forestSoft, fg: colors.forest },
+    brass: { bg: colors.brassSoft, fg: '#7A6035' },
+    umber: { bg: colors.umberSoft, fg: colors.umber },
+    onDark: { bg: 'rgba(244,241,233,0.12)', fg: colors.onDark },
+  }[tone];
   return (
-    <View style={{ height, borderRadius: radius.pill, backgroundColor: track, overflow: 'hidden' }}>
-      {pct > 0 && (
-        <View style={{ width: `${pct}%`, height: '100%', backgroundColor: color, borderRadius: radius.pill, overflow: 'hidden' }}>
-          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: Math.max(3, Math.round(height / 4)), backgroundColor: shade }} />
-        </View>
-      )}
+    <View style={[styles.tag, { backgroundColor: map.bg }]}>
+      {icon ? <Icon name={icon} size={13} color={map.fg} weight="regular" /> : null}
+      <Text style={[styles.tagText, { color: map.fg }]}>{label}</Text>
     </View>
   );
 }
 
-/** Round route node: fill with an inset bottom shade (box-shadow: inset 0 -6px 0). */
-export function Node({
-  size = 64,
-  color,
-  shade,
-  children,
-  style,
-}: {
-  size?: number;
-  color: string;
-  shade: string;
-  children?: ReactNode;
-  style?: StyleProp<ViewStyle>;
-}) {
-  const h = Math.round(size * 0.94);
-  const inset = Math.max(3, Math.round(size / 10.5));
+/** Round emblem with a hairline ring. */
+export function Emblem({ icon, size = 44, tone = 'default' }: { icon: IconName; size?: number; tone?: 'default' | 'active' | 'done' | 'locked' | 'onDark' }) {
+  const map = {
+    default: { bg: colors.surface, border: colors.line, fg: colors.forest, weight: 'light' as const },
+    active: { bg: colors.forest, border: colors.forest, fg: colors.onDark, weight: 'light' as const },
+    done: { bg: colors.forestSoft, border: colors.forestSoft, fg: colors.forest, weight: 'regular' as const },
+    locked: { bg: colors.bg, border: colors.line, fg: colors.muted, weight: 'light' as const },
+    onDark: { bg: 'rgba(244,241,233,0.08)', border: 'rgba(244,241,233,0.24)', fg: colors.onDark, weight: 'light' as const },
+  }[tone];
   return (
-    <View style={[{ width: size, height: h, borderRadius: size, backgroundColor: shade, overflow: 'hidden' }, style]}>
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: inset, borderRadius: size, backgroundColor: color }} />
-      <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center', paddingBottom: inset / 2 }]}>{children}</View>
+    <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 1, borderColor: map.border, backgroundColor: map.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name={icon} size={size * 0.48} color={map.fg} weight={map.weight} />
     </View>
   );
 }
 
-export function BackButton({ onPress, kind = 'back' }: { onPress?: () => void; kind?: 'back' | 'close' }) {
+export function BackButton({ onPress, kind = 'back', label }: { onPress?: () => void; kind?: 'back' | 'close'; label?: string }) {
   return (
     <Pressable
       onPress={onPress ?? (() => (router.canGoBack() ? router.back() : router.replace('/viaje')))}
       accessibilityLabel={kind === 'back' ? 'Volver' : 'Cerrar'}
-      hitSlop={8}
+      hitSlop={12}
       style={styles.back}
     >
-      <Text style={{ fontFamily: fonts.title, fontSize: 18, color: colors.inkSoft }}>{kind === 'back' ? '←' : '✕'}</Text>
+      <Icon name={kind === 'back' ? 'arrowLeft' : 'close'} size={20} color={colors.ink} />
+      {label ? <Text style={styles.backLabel}>{label}</Text> : null}
     </Pressable>
   );
 }
 
-/** Victor speaking: portrait + speech bubble with a flat bottom-left corner. */
-export function MentorSays({ children, size = 56, footer }: { children: ReactNode; size?: number; footer?: ReactNode }) {
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
-      <Sprite name="mentor" width={size} />
-      <View style={styles.bubble}>
-        {typeof children === 'string' ? <T variant="bodyStrong" style={{ fontFamily: fonts.bold }}>{children}</T> : children}
-        {footer}
+/** Victor's note: a serif monogram and his words, set like a quoted aside. */
+export function MentorNote({ children, action, onPress }: { children: ReactNode; action?: string; onPress?: () => void }) {
+  const body = (
+    <View style={styles.note}>
+      <View style={styles.monogram}>
+        <Text style={styles.monogramText}>V</Text>
       </View>
+      <View style={{ flex: 1, gap: 6 }}>
+        <T variant="label">Victor · tu mentor</T>
+        {typeof children === 'string' ? <T style={{ color: colors.ink }}>{children}</T> : children}
+        {action ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 2 }}>
+            <Text style={styles.noteAction}>{action}</Text>
+            <Icon name="arrowRight" size={14} color={colors.forest} weight="regular" />
+          </View>
+        ) : null}
+      </View>
+    </View>
+  );
+  return onPress ? <Pressable onPress={onPress}>{body}</Pressable> : body;
+}
+
+/** Section heading with an optional trailing action. */
+export function SectionTitle({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
+      <T variant="label">{title}</T>
+      {action ? (
+        <Text onPress={onAction} style={styles.sectionAction}>
+          {action}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -293,8 +235,8 @@ export function MentorSays({ children, size = 56, footer }: { children: ReactNod
 const RowContext = createContext(false);
 
 /** Two columns on wide screens, stacked on phones. */
-export function Columns({ children, gap = space.lg, min = 760 }: { children: ReactNode; gap?: number; min?: number }) {
-  const wide = useWide(min);
+export function Columns({ children, gap = space.xl }: { children: ReactNode; gap?: number }) {
+  const wide = useWide();
   return (
     <RowContext.Provider value={wide}>
       <View style={{ flexDirection: wide ? 'row' : 'column', gap, alignItems: wide ? 'flex-start' : 'stretch' }}>{children}</View>
@@ -302,43 +244,45 @@ export function Columns({ children, gap = space.lg, min = 760 }: { children: Rea
   );
 }
 
-export function Column({ children, gap = space.lg }: { children: ReactNode; gap?: number }) {
+export function Column({ children, gap = space.xl }: { children: ReactNode; gap?: number }) {
   const inRow = useContext(RowContext);
   return <View style={[{ gap, minWidth: 0 }, inRow && { flex: 1 }]}>{children}</View>;
 }
 
-const text = StyleSheet.create({
-  title: { fontFamily: fonts.title, fontSize: 30, lineHeight: 34, color: colors.bosque },
-  h2: { fontFamily: fonts.title, fontSize: 18, lineHeight: 23, color: colors.ink },
-  body: { fontFamily: fonts.bold, fontSize: 15, lineHeight: 22, color: colors.inkSoft },
-  bodyStrong: { fontFamily: fonts.title, fontSize: 15, lineHeight: 21, color: colors.ink },
-  small: { fontFamily: fonts.bold, fontSize: 13, lineHeight: 18, color: colors.muted },
-  phrase: { fontFamily: fonts.phrase, fontSize: 22, lineHeight: 29, color: colors.ink },
+export const text = StyleSheet.create({
+  display: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, color: colors.ink, letterSpacing: -0.4 },
+  title: { fontFamily: fonts.display, fontSize: 26, lineHeight: 32, color: colors.ink, letterSpacing: -0.2 },
+  heading: { fontFamily: fonts.sansSemi, fontSize: 17, lineHeight: 23, color: colors.ink },
+  body: { fontFamily: fonts.sans, fontSize: 15, lineHeight: 23, color: colors.inkSoft },
+  bodyStrong: { fontFamily: fonts.sansSemi, fontSize: 15, lineHeight: 22, color: colors.ink },
+  small: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.muted },
+  label: { fontFamily: fonts.sansSemi, fontSize: 11, lineHeight: 14, letterSpacing: 1.3, textTransform: 'uppercase', color: colors.moss },
+  quote: { fontFamily: fonts.displayItalic, fontSize: 22, lineHeight: 30, color: colors.ink },
 });
 
 const styles = StyleSheet.create({
-  footer: { borderTopWidth: 2, borderTopColor: colors.divider, paddingTop: 14 },
-  back: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
+  footer: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line, paddingTop: 12, paddingBottom: 12 },
+  button: {
+    minHeight: 52,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'flex-start',
+    gap: 10,
   },
-  bubble: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderWidth: 2,
-    borderBottomWidth: 5,
-    borderColor: colors.border,
-    borderRadius: 18,
-    borderBottomLeftRadius: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 8,
-  },
+  buttonCompact: { minHeight: 40, paddingHorizontal: 14, borderRadius: 10 },
+  buttonLabel: { fontFamily: fonts.sansSemi, fontSize: 15, letterSpacing: 0.1 },
+  surface: { borderRadius: radius.lg, padding: space.xl },
+  surfaceBorder: { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line },
+  tag: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
+  tagText: { fontFamily: fonts.sansSemi, fontSize: 12, letterSpacing: 0.2 },
+  back: { flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start', paddingVertical: 8 },
+  backLabel: { fontFamily: fonts.sansMedium, fontSize: 14, color: colors.ink },
+  note: { flexDirection: 'row', gap: 14, paddingVertical: 4 },
+  monogram: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.forest, alignItems: 'center', justifyContent: 'center' },
+  monogramText: { fontFamily: fonts.display, fontSize: 19, lineHeight: 22, color: colors.onDark },
+  noteAction: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.forest },
+  sectionAction: { fontFamily: fonts.sansSemi, fontSize: 13, color: colors.forest },
 });

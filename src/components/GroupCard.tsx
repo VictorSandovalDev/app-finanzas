@@ -1,29 +1,33 @@
-import { Linking, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
-import { Sprite } from '@/components/Sprite';
-import { Card, ChunkyButton, GameLabel, T } from '@/components/ui';
+import { Icon } from '@/components/Icon';
+import { Button, T } from '@/components/ui';
 import { Level } from '@/data/levels';
 import { useJourney } from '@/state/journey';
 import { colors } from '@/theme/tokens';
 
 /** Private WhatsApp group of a station. */
-export function GroupCard({ level }: { level: Level }) {
+export function GroupRow({ level }: { level: Level }) {
   const { update } = useJourney();
   const open = () => {
     if (level.whatsappUrl) Linking.openURL(level.whatsappUrl).catch(() => {});
     if (level.id === 1) update((s) => ({ ...s, level1: { ...s.level1, joinedGroup: true } }));
   };
   return (
-    <Card style={{ gap: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <Sprite name="flag" width={44} />
-        <View style={{ flex: 1 }}>
-          <GameLabel size={11} color={colors.verde}>GRUPO PRIVADO · EST. {level.id}</GameLabel>
-          <T variant="bodyStrong" style={{ fontSize: 16 }}>{level.groupHost}</T>
-          <T variant="small">{level.groupSession}</T>
-        </View>
+    <View style={styles.row}>
+      <View style={styles.icon}>
+        <Icon name="group" size={20} color={colors.forest} />
       </View>
-      <ChunkyButton label="Abrir en WhatsApp" size="sm" onPress={open} />
-    </Card>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <T variant="bodyStrong" numberOfLines={1}>{level.groupHost}</T>
+        <T variant="small" numberOfLines={1}>{level.groupSession}</T>
+      </View>
+      <Button label="Abrir" icon="whatsapp" variant="secondary" compact onPress={open} />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  icon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.forestSoft, alignItems: 'center', justifyContent: 'center' },
+});

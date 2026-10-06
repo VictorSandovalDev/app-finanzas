@@ -1,6 +1,6 @@
 import { Href } from 'expo-router';
 
-import { SpriteName } from '@/components/Sprite';
+import { IconName } from '@/components/Icon';
 import { MONEY_IDEAS } from '@/data/content';
 import { getLevel, LEVELS, LevelId } from '@/data/levels';
 import { JourneyState, localDay } from '@/state/journey';
@@ -14,7 +14,7 @@ export type Mission = {
   description: string;
   done: boolean;
   xp: number;
-  sprite: SpriteName;
+  icon: IconName;
   /** Optional missions do not block completing the level. */
   optional?: boolean;
   href: Href;
@@ -30,7 +30,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Cuéntale a Victor qué pasa con tu dinero y qué te gustaría cambiar.',
           done: !!state.level1.map,
           xp: 50,
-          sprite: 'mentor',
+          icon: 'chat',
           href: state.level1.map ? '/mision/mapa-personal' : '/mision/relato',
         },
         {
@@ -39,7 +39,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Tres cartas para reencuadrar, fortalecerte y pasar a la acción.',
           done: !!state.level1.mantrasSaved,
           xp: 80,
-          sprite: 'lantern',
+          icon: 'quotes',
           href: state.level1.map ? '/mision/frases' : '/mision/relato',
         },
         {
@@ -48,7 +48,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Acompañamiento durante la semana en el grupo privado.',
           done: !!state.level1.joinedGroup,
           xp: 20,
-          sprite: 'flag',
+          icon: 'group',
           optional: true,
           href: '/nivel/1',
         },
@@ -61,7 +61,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Conceptos simples para quitarle lo misterioso a las finanzas.',
           done: state.level2.understood.length >= MONEY_IDEAS.length,
           xp: 50,
-          sprite: 'sprout',
+          icon: 'plant',
           href: '/mision/ideas-del-dinero',
         },
         {
@@ -70,7 +70,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Mira cómo entra, se reparte y sale tu dinero cada mes.',
           done: !!state.level2.moneyMap,
           xp: 80,
-          sprite: 'map',
+          icon: 'map',
           href: '/mision/mapa-del-dinero',
         },
       ];
@@ -82,7 +82,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Ubica en qué punto del camino a la independencia estás hoy.',
           done: state.level3.stage !== undefined,
           xp: 50,
-          sprite: 'door',
+          icon: 'door',
           href: '/mision/recorrido',
         },
         {
@@ -91,7 +91,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Necesidades esenciales, personales y construcción de futuro.',
           done: !!state.level3.done,
           xp: 80,
-          sprite: 'house',
+          icon: 'house',
           href: state.level3.done ? '/mision/numero' : '/mision/costo-de-vida',
         },
       ];
@@ -186,13 +186,13 @@ export function getWeek(state: JourneyState): WeekDay[] {
   });
 }
 
-export type Deliverable = { id: string; levelId: LevelId; title: string; ready: boolean; sprite: SpriteName; href: Href };
+export type Deliverable = { id: string; levelId: LevelId; title: string; ready: boolean; icon: IconName; href: Href };
 
 export function getDeliverables(state: JourneyState): Deliverable[] {
   return [
-    { id: 'mapa-personal', levelId: 1, title: 'Mapa Personal', ready: !!state.level1.map, sprite: 'scroll', href: '/mision/mapa-personal' },
-    { id: 'frases', levelId: 1, title: 'Mis frases', ready: !!state.level1.mantrasSaved, sprite: 'lantern', href: '/mision/frases' },
-    { id: 'mapa-dinero', levelId: 2, title: getLevel(2)!.deliverable, ready: !!state.level2.moneyMap, sprite: 'map', href: '/mision/mapa-del-dinero' },
-    { id: 'numero', levelId: 3, title: 'Número de Independencia', ready: !!state.level3.done, sprite: 'door', href: '/mision/numero' },
+    { id: 'mapa-personal', levelId: 1, title: 'Mapa Personal de Transformación', ready: !!state.level1.map, icon: 'scroll', href: '/mision/mapa-personal' },
+    { id: 'frases', levelId: 1, title: 'Mis frases personales', ready: !!state.level1.mantrasSaved, icon: 'quotes', href: '/mision/frases' },
+    { id: 'mapa-dinero', levelId: 2, title: getLevel(2)!.deliverable, ready: !!state.level2.moneyMap, icon: 'map', href: '/mision/mapa-del-dinero' },
+    { id: 'numero', levelId: 3, title: 'Mi Número de Independencia', ready: !!state.level3.done, icon: 'house', href: '/mision/numero' },
   ];
 }

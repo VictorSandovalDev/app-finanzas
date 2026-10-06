@@ -1,20 +1,18 @@
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Hud } from '@/components/Hud';
-import { Bob } from '@/components/motion';
-import { Sprite } from '@/components/Sprite';
-import { Card, ChunkyButton, GameLabel, MentorSays, Screen, T } from '@/components/ui';
+import { Icon } from '@/components/Icon';
+import { Button, Divider, MentorNote, Screen, SectionTitle, T } from '@/components/ui';
 import { useJourney } from '@/state/journey';
 import { getCurrentLevel, getNextMission, getNextMissionHref } from '@/state/missions';
-import { colors } from '@/theme/tokens';
+import { colors, fonts } from '@/theme/tokens';
 
-/** Victor's tip for each mission. */
+/** Victor's note for each mission. */
 const TIPS: Record<string, string> = {
-  relato: 'Antes de hablar de números, quiero entender tu historia. Cuéntamela con tus palabras.',
+  relato: 'Antes de hablar de números, quiero entender tu historia. Cuéntamela con tus palabras, sin prisa.',
   frases: 'Tus frases ya están listas. Léelas en voz alta cada mañana de esta semana.',
-  ideas: 'Ocho ideas, una a la vez. No necesitas memorizarlas: solo entenderlas.',
-  mapa: 'Ten a mano tus movimientos del último mes. Con ellos tu mapa será exacto.',
+  ideas: 'Son ocho ideas, una a la vez. No necesitas memorizarlas: basta con que puedas explicarlas.',
+  mapa: 'Ten a mano tus movimientos del último mes. Con ellos tu Mapa del Dinero será exacto.',
   recorrido: 'No hay una etapa correcta. Solo un punto de partida honesto.',
   costo: 'Empieza por lo esencial. Si algo se paga cada año, divídelo entre doce.',
 };
@@ -34,30 +32,37 @@ export default function Mentor() {
         : 'Tu siguiente estación te espera. Avanzamos cuando estés listo.';
 
   return (
-    <Screen header={<Hud />} edgeToEdge maxWidth={760}>
-      <View style={{ alignItems: 'center', gap: 6, paddingVertical: 8 }}>
-        <Bob duration={2400}>
-          <Sprite name="mentor" width={96} />
-        </Bob>
-        <T variant="title" style={{ fontSize: 26 }}>Victor</T>
-        <GameLabel color={colors.verde}>TU MENTOR{current ? ` · ESTACIÓN ${current.id}` : ''}</GameLabel>
+    <Screen>
+      <View style={{ gap: 12, paddingTop: 8 }}>
+        <T variant="display">Tu mentor</T>
+        <T>Victor te acompaña en cada estación. Escríbele o envíale un audio cuando lo necesites.</T>
       </View>
 
-      <MentorSays size={56}>{tip}</MentorSays>
-
-      {mission && <ChunkyButton label={`Ir a: ${mission.title}`} onPress={() => router.push(getNextMissionHref(state))} />}
+      <MentorNote>{tip}</MentorNote>
+      {mission && <Button label={mission.title} icon="arrowRight" onPress={() => router.push(getNextMissionHref(state))} />}
 
       {state.unlocked.includes(1) && (
-        <Card onPress={() => router.push('/mision/relato')} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Sprite name="scroll" width={36} />
-          <View style={{ flex: 1 }}>
-            <GameLabel size={11} color={colors.verde}>ESTACIÓN 1 · CONVERSACIÓN</GameLabel>
-            <T variant="bodyStrong" style={{ fontSize: 16 }}>¿Por qué estás aquí?</T>
-            <T variant="small">{state.level1.map ? 'Completada · ver conversación' : chatStarted ? 'En curso' : 'Sin empezar'}</T>
-          </View>
-          <T variant="bodyStrong" style={{ color: colors.verde }}>→</T>
-        </Card>
+        <View style={{ gap: 6 }}>
+          <SectionTitle title="Conversaciones" />
+          <Divider />
+          <Pressable onPress={() => router.push('/mision/relato')} style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
+            <Icon name="chat" size={22} color={colors.forest} />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={styles.title}>¿Por qué estás aquí?</Text>
+              <T variant="small">
+                Estación 1 · {state.level1.map ? 'Completada' : chatStarted ? 'En curso' : 'Sin empezar'}
+              </T>
+            </View>
+            <Icon name="caretRight" size={16} color={colors.muted} />
+          </Pressable>
+          <Divider />
+        </View>
       )}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 },
+  title: { fontFamily: fonts.sansSemi, fontSize: 15, color: colors.ink },
+});
