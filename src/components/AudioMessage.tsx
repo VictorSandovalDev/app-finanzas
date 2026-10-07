@@ -14,7 +14,7 @@ export function AudioMessage({ path, duration, onDark }: { path: string; duratio
   useEffect(() => {
     audioUrl(path).then(setUrl);
   }, [path]);
-  const fg = onDark ? colors.onDark : colors.forest;
+  const fg = onDark ? colors.onDark : colors.accent;
   if (!url)
     return (
       <View style={styles.row}>
@@ -39,7 +39,7 @@ function Player({ url, duration, fg, onDark }: { url: string; duration: number; 
       <Icon name="play" size={18} color={fg} weight="fill" />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, height: 22 }}>
         {WAVE.map((h, i) => (
-          <View key={i} style={{ width: 2, height: h, borderRadius: 1, backgroundColor: onDark ? 'rgba(244,241,233,0.7)' : colors.moss }} />
+          <View key={i} style={{ width: 2, height: h, borderRadius: 1, backgroundColor: onDark ? 'rgba(244,241,233,0.7)' : colors.label }} />
         ))}
       </View>
       <Text style={[styles.duration, { color: fg }]}>

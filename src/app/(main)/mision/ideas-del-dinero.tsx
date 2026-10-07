@@ -43,7 +43,7 @@ export default function MoneyIdeas() {
       </View>
 
       <FadeUp key={idea.id} style={{ gap: 16 }}>
-        <Text style={{ fontFamily: fonts.display, fontSize: 18, color: colors.brass }}>Idea {String(index + 1).padStart(2, '0')}</Text>
+        <Text style={{ fontFamily: fonts.display, fontSize: 18, color: colors.warm }}>Idea {String(index + 1).padStart(2, '0')}</Text>
         <T variant="display">{idea.title}</T>
         <T style={{ fontSize: 17, lineHeight: 27, color: colors.ink }}>{idea.body}</T>
         <Surface tone="sunken" style={{ gap: 6 }}>

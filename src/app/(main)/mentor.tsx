@@ -45,7 +45,7 @@ export default function Mentor() {
           <SectionTitle title="Conversaciones" />
           <Divider />
           <Pressable onPress={() => router.push('/mision/relato')} style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
-            <Icon name="chat" size={22} color={colors.forest} />
+            <Icon name="chat" size={22} color={colors.accent} />
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.title}>¿Por qué estás aquí?</Text>
               <T variant="small">

@@ -1,13 +1,16 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Cover } from '@/components/Cover';
+import { GroupRow } from '@/components/GroupCard';
 import { Icon, IconName } from '@/components/Icon';
 import { FadeUp } from '@/components/motion';
-import { BackButton, Button, Column, Columns, Divider, Emblem, MentorNote, Progress, Screen, SectionTitle, Surface, T, Tag } from '@/components/ui';
+import { BackButton, Button, Divider, MentorNote, Progress, Screen, SectionTitle, T, Tag } from '@/components/ui';
 import { formatCOP, getLevel, Level } from '@/data/levels';
 import { useJourney } from '@/state/journey';
 import { canCompleteLevel, getDeliverables, getLevelXp, getMissions, Mission, STATION_XP } from '@/state/missions';
-import { colors, fonts } from '@/theme/tokens';
+import { colors, fonts, radius } from '@/theme/tokens';
 
 const MENTOR_TIPS: Record<number, string> = {
   1: 'Antes de hablar de números, quiero entender tu historia. No hay respuestas correctas.',
@@ -25,15 +28,35 @@ export default function LevelScreen() {
   return <ActiveLevel level={level} />;
 }
 
-function backToMap() {
+function backToRoute() {
   if (router.canGoBack()) router.back();
   else router.replace('/mapa');
+}
+
+function Chips({ level, missions }: { level: Level; missions: number }) {
+  return (
+    <View style={styles.chips}>
+      <View style={styles.chip}>
+        <Icon name="play" size={13} color={colors.ink} />
+        <Text style={styles.chipText}>{missions} misiones</Text>
+      </View>
+      <View style={styles.chip}>
+        <Icon name="clock" size={13} color={colors.ink} />
+        <Text style={styles.chipText}>{level.duration}</Text>
+      </View>
+      <View style={styles.chip}>
+        <Icon name="group" size={13} color={colors.ink} />
+        <Text style={styles.chipText}>Grupo privado</Text>
+      </View>
+    </View>
+  );
 }
 
 function LockedLevel({ level }: { level: Level }) {
   const { state } = useJourney();
   const previous = level.id > 1 ? getLevel(level.id - 1) : undefined;
   const ready = !previous || state.completed.includes(previous.id);
+  const missions = getMissions(state, level.id).filter((m) => !m.optional);
 
   const includes: { icon: IconName; text: string }[] = [
     { icon: 'scroll', text: `Entregable: ${level.deliverable}` },
@@ -59,45 +82,51 @@ function LockedLevel({ level }: { level: Level }) {
           />
         </View>
       }
+      contentStyle={{ gap: 18 }}
     >
-      <BackButton onPress={backToMap} label="Mapa" />
-      <Columns>
-        <Column gap={16}>
-          <FadeUp style={{ gap: 16 }}>
-            <Emblem icon={level.icon} size={64} tone="locked" />
-            <T variant="label">
-              Estación {level.id} · {level.stage} · {level.duration}
-            </T>
-            <T variant="display">{level.title}</T>
-            <T variant="quote" style={{ color: colors.inkSoft }}>{level.promise}</T>
-          </FadeUp>
-        </Column>
-        <Column gap={16}>
-          <SectionTitle title="Lo que vas a descubrir" />
-          {level.learn.map((item, i) => (
-            <View key={item} style={{ flexDirection: 'row', gap: 14 }}>
-              <Text style={styles.num}>{String(i + 1).padStart(2, '0')}</Text>
-              <T style={{ flex: 1, color: colors.ink }}>{item}</T>
+      <BackButton onPress={backToRoute} label="Ruta" />
+      <FadeUp style={{ gap: 14 }}>
+        <View>
+          <Cover level={level} height={130} label={`Estación ${level.id} · ${level.stage}`} radius={14} />
+          <View style={styles.lockBadge}>
+            <Icon name="lock" size={16} color={colors.onDark} weight="bold" />
+          </View>
+        </View>
+        <T variant="display">{level.title}</T>
+        <T>{level.promise}</T>
+        <Chips level={level} missions={missions.length} />
+      </FadeUp>
+      <View style={styles.card}>
+        <SectionTitle title="Lo que vas a descubrir" />
+        {level.learn.map((item, i) => (
+          <View key={item} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+            <View style={styles.learnNum}>
+              <Text style={styles.learnNumText}>{i + 1}</Text>
             </View>
-          ))}
-          <SectionTitle title="Incluye" />
-          {includes.map((it) => (
-            <View key={it.text} style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-              <Icon name={it.icon} size={20} color={colors.forest} />
-              <T style={{ flex: 1, color: colors.ink }}>{it.text}</T>
-            </View>
-          ))}
-        </Column>
-      </Columns>
+            <T style={{ flex: 1, color: colors.ink }}>{item}</T>
+          </View>
+        ))}
+      </View>
+      <View style={styles.card}>
+        <SectionTitle title="Incluye" />
+        {includes.map((it) => (
+          <View key={it.text} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <Icon name={it.icon} size={20} color={colors.accent} />
+            <T style={{ flex: 1, color: colors.ink }}>{it.text}</T>
+          </View>
+        ))}
+      </View>
     </Screen>
   );
 }
 
+type Tab = 'misiones' | 'entregable' | 'comunidad';
+
 function ActiveLevel({ level }: { level: Level }) {
-  const { state, complete, update } = useJourney();
+  const { state, complete } = useJourney();
+  const [tab, setTab] = useState<Tab>('misiones');
   const missions = getMissions(state, level.id);
   const required = missions.filter((m) => !m.optional);
-  const optional = missions.filter((m) => m.optional);
   const done = required.filter((m) => m.done).length;
   const completed = state.completed.includes(level.id);
   const next = required.find((m) => !m.done);
@@ -109,60 +138,48 @@ function ActiveLevel({ level }: { level: Level }) {
     complete(level.id, level.achievement);
     router.push(`/logro/${level.id}`);
   };
-  const joinGroup = () => {
-    if (level.whatsappUrl) Linking.openURL(level.whatsappUrl).catch(() => {});
-    if (level.id === 1) update((s) => ({ ...s, level1: { ...s.level1, joinedGroup: true } }));
-  };
 
   return (
-    <Screen>
-      <BackButton onPress={backToMap} label="Mapa" />
+    <Screen contentStyle={{ gap: 18 }}>
+      <BackButton onPress={backToRoute} label="Ruta" />
       <FadeUp style={{ gap: 14 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <T variant="label">Estación {level.id} · {level.stage}</T>
-          {completed && <Tag label="Completada" tone="forest" icon="check" />}
+        <Cover level={level} height={130} label={`Estación ${level.id} · ${level.stage}`} radius={14} />
+        <View style={{ gap: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <T variant="display" style={{ flexShrink: 1 }}>{level.title}</T>
+            {completed && <Tag label="Completada" tone="accent" icon="check" />}
+          </View>
+          <T>{level.promise}</T>
         </View>
-        <T variant="display">{level.title}</T>
-        <T>{level.objective}</T>
-        <View style={{ gap: 8, paddingTop: 4 }}>
-          <Progress value={(done / required.length) * 100} />
-          <T variant="small">
-            {done} de {required.length} misiones · {xp.earned} de {xp.max} XP
-          </T>
+        <Chips level={level} missions={required.length} />
+        <View style={styles.progressRow}>
+          <View style={{ flex: 1 }}>
+            <Progress value={(done / required.length) * 100} />
+          </View>
+          <Text style={styles.progressText}>
+            {xp.earned} / {xp.max} XP
+          </Text>
         </View>
       </FadeUp>
 
-      <Columns>
-        <Column gap={14}>
-          <SectionTitle title="Bitácora de misiones" />
-          {required.map((m, i) => (m === next && !completed ? <NextMission key={m.id} mission={m} index={i + 1} /> : <MissionRow key={m.id} mission={m} index={i + 1} locked={!m.done} />))}
-
-          {optional.map((m) => (
-            <Pressable key={m.id} onPress={joinGroup} style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
-              <Icon name="group" size={22} color={m.done ? colors.forest : colors.muted} />
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <T variant="bodyStrong">{m.title}</T>
-                <T variant="small">{m.done ? 'Te uniste al grupo' : `Opcional · +${m.xp} XP`}</T>
-              </View>
-              <Icon name="whatsapp" size={20} color={colors.forest} />
-            </Pressable>
-          ))}
-
-          <Divider />
-          <Pressable
-            onPress={completed && deliverable ? () => router.push(deliverable.href) : undefined}
-            style={({ pressed }) => [styles.row, pressed && completed && { opacity: 0.7 }]}
-          >
-            <Icon name="scroll" size={22} color={completed ? colors.forest : colors.brass} />
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <T variant="small">Recompensa de la estación</T>
-              <T variant="bodyStrong">
-                {level.deliverable} · {STATION_XP} XP
-              </T>
-            </View>
-            {completed && <Icon name="caretRight" size={16} color={colors.muted} />}
+      <View style={styles.segment}>
+        {(['misiones', 'entregable', 'comunidad'] as Tab[]).map((t) => (
+          <Pressable key={t} onPress={() => setTab(t)} style={[styles.segmentItem, tab === t && styles.segmentOn]} accessibilityRole="tab" accessibilityState={{ selected: tab === t }}>
+            <Text style={[styles.segmentText, tab === t && { color: colors.ink }]}>{t === 'misiones' ? 'Misiones' : t === 'entregable' ? 'Entregable' : 'Comunidad'}</Text>
           </Pressable>
+        ))}
+      </View>
 
+      {tab === 'misiones' && (
+        <View style={{ gap: 14 }}>
+          <View>
+            {required.map((m, i) => (
+              <View key={m.id}>
+                {i > 0 && <Divider />}
+                <Lesson mission={m} index={i + 1} isNext={m === next && !completed} locked={!m.done && m !== next} />
+              </View>
+            ))}
+          </View>
           {completed ? (
             nextLevel?.available ? (
               <Button
@@ -174,73 +191,100 @@ function ActiveLevel({ level }: { level: Level }) {
           ) : canCompleteLevel(state, level.id) ? (
             <Button label="Completar estación" icon="seal" onPress={finish} />
           ) : null}
-        </Column>
-        <Column>
           <MentorNote action="Hablar con Victor" onPress={() => router.push(level.id === 1 && !state.level1.map ? '/mision/relato' : '/mentor')}>
             {MENTOR_TIPS[level.id] ?? 'Avanzamos una misión a la vez.'}
           </MentorNote>
-        </Column>
-      </Columns>
+        </View>
+      )}
+
+      {tab === 'entregable' && (
+        <Pressable
+          onPress={deliverable?.ready ? () => router.push(deliverable.href) : undefined}
+          style={({ pressed }) => [styles.card, { flexDirection: 'row', alignItems: 'center' }, pressed && deliverable?.ready && { opacity: 0.85 }]}
+        >
+          <View style={[styles.delivIcon, deliverable?.ready && { backgroundColor: colors.accentSoft }]}>
+            <Icon name="scroll" size={22} color={deliverable?.ready ? colors.accent : colors.muted} />
+          </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            <T variant="label">{deliverable?.ready ? 'Listo para consultar' : 'Al terminar la estación'}</T>
+            <T variant="bodyStrong">
+              {level.deliverable} + {STATION_XP} XP
+            </T>
+            <T variant="small">Logro: {level.achievement}</T>
+          </View>
+          {deliverable?.ready && <Icon name="caretRight" size={16} color={colors.muted} />}
+        </Pressable>
+      )}
+
+      {tab === 'comunidad' && (
+        <View style={{ gap: 14 }}>
+          {level.whatsappUrl ? (
+            <View style={styles.card}>
+              <GroupRow level={level} />
+            </View>
+          ) : null}
+          <T variant="small">Comparte avances, resuelve dudas con Victor y avanza junto a quienes están en la misma estación.</T>
+        </View>
+      )}
     </Screen>
   );
 }
 
-function MissionRow({ mission, index, locked }: { mission: Mission; index: number; locked: boolean }) {
+function Lesson({ mission, index, isNext, locked }: { mission: Mission; index: number; isNext: boolean; locked: boolean }) {
   return (
-    <Pressable onPress={locked ? undefined : () => router.push(mission.href)} style={({ pressed }) => [styles.row, pressed && !locked && { opacity: 0.7 }]}>
-      <View style={[styles.step, mission.done && styles.stepDone]}>
-        {mission.done ? <Icon name="check" size={14} color={colors.onDark} weight="bold" /> : <Text style={styles.stepNum}>{index}</Text>}
+    <Pressable onPress={locked ? undefined : () => router.push(mission.href)} style={({ pressed }) => [styles.lesson, pressed && !locked && { opacity: 0.7 }]}>
+      <View style={[styles.num, mission.done && styles.numDone, isNext && styles.numNext]}>
+        {mission.done ? <Icon name="check" size={13} color={colors.onDark} weight="bold" /> : <Text style={[styles.numText, isNext && { color: colors.onDark }]}>{index}</Text>}
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <T variant="bodyStrong" style={locked && { color: colors.muted }}>{mission.title}</T>
-        <T variant="small">{mission.done ? `Completada · +${mission.xp} XP` : `+${mission.xp} XP`}</T>
+        <T variant="small">{mission.done ? `Completada · +${mission.xp} XP` : `${mission.minutes} min · +${mission.xp} XP`}</T>
       </View>
-      {locked ? <Icon name="lock" size={16} color={colors.muted} /> : <Icon name="caretRight" size={16} color={colors.muted} />}
+      {isNext ? (
+        <View style={styles.play}>
+          <Icon name="play" size={15} color={colors.onDark} weight="fill" />
+        </View>
+      ) : locked ? (
+        <Icon name="lock" size={16} color={colors.muted} />
+      ) : (
+        <Icon name="caretRight" size={16} color={colors.muted} />
+      )}
     </Pressable>
-  );
-}
-
-function NextMission({ mission, index }: { mission: Mission; index: number }) {
-  return (
-    <Surface style={{ gap: 14 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <T variant="label" style={{ color: colors.umber }}>Tu siguiente misión</T>
-        <Tag label={`+${mission.xp} XP`} tone="brass" />
-      </View>
-      <View style={{ flexDirection: 'row', gap: 14 }}>
-        <View style={[styles.step, { borderColor: colors.forest }]}>
-          <Text style={[styles.stepNum, { color: colors.forest }]}>{index}</Text>
-        </View>
-        <View style={{ flex: 1, gap: 4 }}>
-          <T variant="heading">{mission.title}</T>
-          <T>{mission.description}</T>
-        </View>
-      </View>
-      <Button label="Empezar" icon="arrowRight" onPress={() => router.push(mission.href)} />
-    </Surface>
   );
 }
 
 function ComingSoon({ level }: { level: Level }) {
   return (
-    <Screen>
-      <BackButton onPress={backToMap} label="Mapa" />
-      <View style={{ gap: 16 }}>
-        <Emblem icon={level.icon} size={64} tone="locked" />
-        <T variant="label">Estación {level.id} · {level.stage} · Próximamente</T>
-        <T variant="display">{level.title}</T>
-        <T>{level.objective}</T>
-        <T variant="small">Esta estación se está preparando. Te avisaremos cuando abra.</T>
-      </View>
+    <Screen contentStyle={{ gap: 16 }}>
+      <BackButton onPress={backToRoute} label="Ruta" />
+      <Cover level={level} height={130} label={`Estación ${level.id} · Próximamente`} radius={14} style={{ opacity: 0.7 }} />
+      <T variant="display">{level.title}</T>
+      <T>{level.objective}</T>
+      <T variant="small">Esta estación se está preparando. Te avisaremos cuando abra.</T>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  price: { fontFamily: fonts.display, fontSize: 26, lineHeight: 30, color: colors.ink },
-  num: { fontFamily: fonts.display, fontSize: 18, lineHeight: 23, color: colors.brass, width: 26, fontVariant: ['tabular-nums'] },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 6 },
-  step: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
-  stepDone: { backgroundColor: colors.forest, borderColor: colors.forest },
-  stepNum: { fontFamily: fonts.sansSemi, fontSize: 13, color: colors.muted },
+  price: { fontFamily: fonts.display, fontSize: 24, lineHeight: 28, color: colors.ink },
+  lockBadge: { position: 'absolute', left: 12, top: 12, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.sunken, borderRadius: radius.pill, paddingHorizontal: 11, paddingVertical: 7 },
+  chipText: { fontFamily: fonts.sansSemi, fontSize: 12.5, color: colors.ink },
+  card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg, padding: 14, gap: 12 },
+  learnNum: { width: 22, height: 22, borderRadius: 6, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  learnNumText: { fontFamily: fonts.display, fontSize: 12, color: colors.accent },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  progressText: { fontFamily: fonts.sansSemi, fontSize: 12.5, color: colors.muted, fontVariant: ['tabular-nums'] },
+  segment: { flexDirection: 'row', gap: 20, borderBottomWidth: 1, borderBottomColor: colors.line },
+  segmentItem: { paddingVertical: 10, borderBottomWidth: 2, borderBottomColor: 'transparent', marginBottom: -1 },
+  segmentOn: { borderBottomColor: colors.accentBright },
+  segmentText: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.muted },
+  lesson: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
+  num: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
+  numDone: { backgroundColor: colors.accentBright },
+  numNext: { backgroundColor: colors.ink },
+  numText: { fontFamily: fonts.display, fontSize: 13, color: colors.muted },
+  play: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  delivIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: colors.sunken, alignItems: 'center', justifyContent: 'center' },
 });

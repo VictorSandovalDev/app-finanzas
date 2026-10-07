@@ -5,6 +5,7 @@ import { ArrowRightIcon } from 'phosphor-react-native/src/icons/ArrowRight';
 import { CaretRightIcon } from 'phosphor-react-native/src/icons/CaretRight';
 import { ChatCircleTextIcon } from 'phosphor-react-native/src/icons/ChatCircleText';
 import { CheckIcon } from 'phosphor-react-native/src/icons/Check';
+import { ClockIcon } from 'phosphor-react-native/src/icons/Clock';
 import { CompassIcon } from 'phosphor-react-native/src/icons/Compass';
 import { DiamondIcon } from 'phosphor-react-native/src/icons/Diamond';
 import { DoorOpenIcon } from 'phosphor-react-native/src/icons/DoorOpen';
@@ -37,6 +38,7 @@ const ICONS = {
   caretRight: CaretRightIcon,
   chat: ChatCircleTextIcon,
   check: CheckIcon,
+  clock: ClockIcon,
   compass: CompassIcon,
   diamond: DiamondIcon,
   door: DoorOpenIcon,

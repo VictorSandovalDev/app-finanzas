@@ -16,7 +16,7 @@ export function GroupRow({ level }: { level: Level }) {
   return (
     <View style={styles.row}>
       <View style={styles.icon}>
-        <Icon name="group" size={20} color={colors.forest} />
+        <Icon name="group" size={20} color={colors.accent} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <T variant="bodyStrong" numberOfLines={1}>{level.groupHost}</T>
@@ -29,5 +29,5 @@ export function GroupRow({ level }: { level: Level }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  icon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.forestSoft, alignItems: 'center', justifyContent: 'center' },
+  icon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
 });

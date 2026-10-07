@@ -48,8 +48,8 @@ export default function PersonalMap() {
         <Divider />
       </View>
 
-      <Surface tone="forest" style={{ gap: 8 }}>
-        <T variant="label" style={{ color: colors.brassSoft }}>Qué necesitas transformar</T>
+      <Surface tone="dark" style={{ gap: 8 }}>
+        <T variant="label" style={{ color: colors.warmSoft }}>Qué necesitas transformar</T>
         <T variant="title" style={{ color: colors.onDark, fontSize: 22, lineHeight: 29 }}>{map.transform}</T>
       </Surface>
 
@@ -61,7 +61,7 @@ export default function PersonalMap() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 16, paddingVertical: 18 },
-  num: { fontFamily: fonts.display, fontSize: 18, lineHeight: 22, color: colors.brass, width: 26, fontVariant: ['tabular-nums'] },
+  num: { fontFamily: fonts.display, fontSize: 18, lineHeight: 22, color: colors.warm, width: 26, fontVariant: ['tabular-nums'] },
   value: { fontFamily: fonts.sans, fontSize: 16, lineHeight: 24, color: colors.ink },
   quote: { fontFamily: fonts.displayItalic, fontSize: 19, lineHeight: 27 },
 });

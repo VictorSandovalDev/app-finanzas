@@ -60,7 +60,7 @@ export default function Unlock() {
             <View key={m.id}>
               {i > 0 && <Divider />}
               <Pressable onPress={() => setMethod(m.id)} accessibilityRole="radio" accessibilityState={{ selected: on }} style={styles.method}>
-                <View style={[styles.radio, on && { borderColor: colors.forest }]}>{on && <View style={styles.radioDot} />}</View>
+                <View style={[styles.radio, on && { borderColor: colors.accent }]}>{on && <View style={styles.radioDot} />}</View>
                 <View style={{ flex: 1 }}>
                   <T variant="bodyStrong">{m.label}</T>
                   <T variant="small">{m.hint}</T>
@@ -95,7 +95,7 @@ function Field({ placeholder, style }: { placeholder: string; style?: object }) 
 function Unlocked({ level }: { level: Level }) {
   return (
     <Celebration icon={level.icon}>
-      <T variant="label" style={{ color: colors.brassSoft }}>Estación {level.id} · {level.stage}</T>
+      <T variant="label" style={{ color: colors.warmSoft }}>Estación {level.id} · {level.stage}</T>
       <Text style={styles.celebrationTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
         Estación desbloqueada
       </Text>
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   price: { fontFamily: fonts.display, fontSize: 22, color: colors.ink, fontVariant: ['tabular-nums'] },
   method: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 },
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.forest },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent },
   field: {
     minWidth: 0,
     borderWidth: 1,

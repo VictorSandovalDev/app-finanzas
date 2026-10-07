@@ -67,7 +67,7 @@ export default function MemberDetail() {
               <Tag
                 key={l.id}
                 label={`${l.id} · ${l.stage}`}
-                tone={completed.includes(l.id) ? 'forest' : unlocked.includes(l.id) ? 'brass' : 'neutral'}
+                tone={completed.includes(l.id) ? 'accent' : unlocked.includes(l.id) ? 'warm' : 'neutral'}
                 icon={completed.includes(l.id) ? 'check' : unlocked.includes(l.id) ? undefined : 'lock'}
               />
             ))}
@@ -158,7 +158,7 @@ function Conversation({ memberId }: { memberId: string }) {
       <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: gutter, paddingVertical: 20, gap: 12 }}>
         <T variant="label">Estación 1 · ¿Por qué estás aquí?</T>
         {loading ? (
-          <ActivityIndicator color={colors.forest} />
+          <ActivityIndicator color={colors.accent} />
         ) : messages.length === 0 ? (
           <T>El usuario todavía no ha escrito. Cuando lo haga, verás su mensaje aquí en tiempo real.</T>
         ) : (
@@ -167,30 +167,30 @@ function Conversation({ memberId }: { memberId: string }) {
       </ScrollView>
       <View style={styles.composer}>
         <View style={{ paddingHorizontal: gutter, paddingVertical: 12, gap: 8 }}>
-          {error && <T variant="small" style={{ color: colors.umber }}>{error}</T>}
+          {error && <T variant="small" style={{ color: colors.danger }}>{error}</T>}
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
             {rec.isRecording ? (
-              <View style={[styles.input, { justifyContent: 'center', backgroundColor: colors.umberSoft, borderColor: colors.umberSoft }]}>
-                <Text style={{ fontFamily: fonts.sansMedium, color: colors.umber }}>Grabando · {Math.floor(rec.durationMillis / 1000)} s</Text>
+              <View style={[styles.input, { justifyContent: 'center', backgroundColor: colors.warnSoft, borderColor: colors.warnSoft }]}>
+                <Text style={{ fontFamily: fonts.sansMedium, color: colors.warn }}>Grabando · {Math.floor(rec.durationMillis / 1000)} s</Text>
               </View>
             ) : (
               <TextInput value={draft} onChangeText={setDraft} placeholder="Responde como Victor…" placeholderTextColor={colors.muted} multiline style={styles.input} />
             )}
             {sending ? (
               <View style={styles.round}>
-                <ActivityIndicator color={colors.forest} />
+                <ActivityIndicator color={colors.accent} />
               </View>
             ) : draft.trim() && !rec.isRecording ? (
-              <Pressable onPress={submit} style={[styles.round, { backgroundColor: colors.forest }]} accessibilityLabel="Enviar">
+              <Pressable onPress={submit} style={[styles.round, { backgroundColor: colors.accent }]} accessibilityLabel="Enviar">
                 <Icon name="send" size={20} color={colors.onDark} weight="fill" />
               </Pressable>
             ) : (
               <Pressable
                 onPress={toggleRecording}
-                style={[styles.round, rec.isRecording ? { backgroundColor: colors.umber } : styles.roundQuiet]}
+                style={[styles.round, rec.isRecording ? { backgroundColor: colors.warn } : styles.roundQuiet]}
                 accessibilityLabel={rec.isRecording ? 'Detener y enviar' : 'Grabar audio'}
               >
-                <Icon name={rec.isRecording ? 'stop' : 'mic'} size={20} color={rec.isRecording ? colors.onDark : colors.forest} weight={rec.isRecording ? 'fill' : 'regular'} />
+                <Icon name={rec.isRecording ? 'stop' : 'mic'} size={20} color={rec.isRecording ? colors.onDark : colors.accent} weight={rec.isRecording ? 'fill' : 'regular'} />
               </Pressable>
             )}
           </View>
@@ -259,7 +259,7 @@ function MapEditor({ memberId, name }: { memberId: string; name: string }) {
       <View style={{ gap: 6 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <T variant="heading">Mapa Personal de Transformación</T>
-          {saved?.published_at ? <Tag label="Publicado" tone="forest" icon="check" /> : saved ? <Tag label="Borrador" /> : null}
+          {saved?.published_at ? <Tag label="Publicado" tone="accent" icon="check" /> : saved ? <Tag label="Borrador" /> : null}
         </View>
         <T variant="small">Constrúyelo a partir de la conversación. El usuario lo verá cuando lo publiques.</T>
       </View>
@@ -291,7 +291,7 @@ function MapEditor({ memberId, name }: { memberId: string; name: string }) {
         </View>
       ))}
 
-      {status && <T style={{ color: status.startsWith('No') ? colors.umber : colors.forest }}>{status}</T>}
+      {status && <T style={{ color: status.startsWith('No') ? colors.danger : colors.accent }}>{status}</T>}
       <View style={{ gap: 8 }}>
         <Button label={saved?.published_at ? 'Guardar y actualizar' : `Publicar para ${name || 'el usuario'}`} icon="send" loading={busy} disabled={!complete} onPress={() => save(true)} />
         {!saved?.published_at && <Button label="Guardar borrador" variant="secondary" disabled={busy} onPress={() => save(false)} />}
@@ -306,11 +306,11 @@ const styles = StyleSheet.create({
   name: { fontFamily: fonts.display, fontSize: 26, lineHeight: 32, color: colors.ink },
   tabs: { flexDirection: 'row', gap: 22, paddingTop: 4 },
   tab: { paddingVertical: 8, borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: colors.forest },
+  tabActive: { borderBottomColor: colors.accent },
   tabText: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.muted },
   bubble: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18 },
   theirs: { backgroundColor: colors.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, borderBottomLeftRadius: 6 },
-  mine: { backgroundColor: colors.forest, borderBottomRightRadius: 6 },
+  mine: { backgroundColor: colors.accent, borderBottomRightRadius: 6 },
   bubbleText: { fontFamily: fonts.sans, fontSize: 15, lineHeight: 22, color: colors.ink },
   composer: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line, backgroundColor: colors.bg },
   input: {

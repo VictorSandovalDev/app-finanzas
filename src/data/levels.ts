@@ -16,6 +16,8 @@ export type Level = {
   achievement: string;
   /** Station emblem. */
   icon: IconName;
+  /** Cover colours: base and arcs. */
+  cover: [string, string];
   learn: string[];
   whatsappUrl: string;
   /** Who leads the private group and when it meets. */
@@ -38,6 +40,7 @@ export const LEVELS: Level[] = [
     deliverable: 'Mapa Personal de Transformación',
     achievement: 'Conciencia financiera desbloqueada',
     icon: 'compass',
+    cover: ['#1B6B4A', '#2FA36F'],
     learn: [
       'Identificar el pensamiento que hoy guía tus decisiones',
       'Reconocer la creencia y la emoción detrás de él',
@@ -61,6 +64,7 @@ export const LEVELS: Level[] = [
     deliverable: 'Mapa del Dinero',
     achievement: 'Entendimiento financiero desbloqueado',
     icon: 'plant',
+    cover: ['#1E4E8C', '#3C7DD9'],
     learn: [
       'Dinero que entra y dinero que sale',
       'Ingreso, gasto, deuda y ahorro sin tecnicismos',
@@ -84,6 +88,7 @@ export const LEVELS: Level[] = [
     deliverable: 'Mi Número de Independencia',
     achievement: 'Conozco el costo de mi vida',
     icon: 'door',
+    cover: ['#7A3F1C', '#C46A2E'],
     learn: [
       'El recorrido hacia la independencia económica',
       'Tus necesidades esenciales, una por una',
@@ -106,6 +111,7 @@ export const LEVELS: Level[] = [
     deliverable: 'Mi Plan Mensual',
     achievement: 'Orden financiero desbloqueado',
     icon: 'map',
+    cover: ['#3D3F8F', '#6366C9'],
     learn: [],
     whatsappUrl: '',
     groupHost: 'Martina acompaña el grupo',
@@ -123,6 +129,7 @@ export const LEVELS: Level[] = [
     deliverable: 'Mi Brújula de Decisiones',
     achievement: 'Dirección financiera desbloqueada',
     icon: 'signpost',
+    cover: ['#6B2D5C', '#A64D8F'],
     learn: [],
     whatsappUrl: '',
     groupHost: 'Martina acompaña el grupo',
@@ -140,6 +147,7 @@ export const LEVELS: Level[] = [
     deliverable: 'Mi Plan de Futuro',
     achievement: 'Constructor de futuro',
     icon: 'house',
+    cover: ['#2F5D62', '#4F8A8B'],
     learn: [],
     whatsappUrl: '',
     groupHost: 'Martina acompaña el grupo',

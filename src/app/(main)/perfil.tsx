@@ -77,7 +77,7 @@ export default function Passport() {
                       {done}/{missions.length}
                     </Text>
                   </View>
-                  <Progress value={(done / missions.length) * 100} color={full ? colors.brass : colors.forest} />
+                  <Progress value={(done / missions.length) * 100} color={full ? colors.warm : colors.accent} />
                 </View>
               </View>
             </View>

@@ -31,7 +31,7 @@ export default function IndependencePath() {
                 accessibilityState={{ selected: active }}
                 style={styles.option}
               >
-                <View style={[styles.radio, active && { borderColor: colors.forest }]}>{active && <View style={styles.radioDot} />}</View>
+                <View style={[styles.radio, active && { borderColor: colors.accent }]}>{active && <View style={styles.radioDot} />}</View>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={styles.num}>Etapa {i + 1}</Text>
                   <T variant="heading">{s.title}</T>
@@ -51,6 +51,6 @@ export default function IndependencePath() {
 const styles = StyleSheet.create({
   option: { flexDirection: 'row', gap: 16, paddingVertical: 18 },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: colors.line, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
-  radioDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: colors.forest },
-  num: { fontFamily: fonts.sansSemi, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: colors.moss },
+  radioDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: colors.accent },
+  num: { fontFamily: fonts.sansSemi, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: colors.label },
 });

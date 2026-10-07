@@ -37,7 +37,7 @@ export default function AdminHome() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={colors.forest} />
+        <ActivityIndicator color={colors.accent} />
       ) : members.length === 0 ? (
         <T>Todavía no hay usuarios. Cuando alguien cree su cuenta en la app, aparecerá aquí.</T>
       ) : (
@@ -72,13 +72,13 @@ function MemberRow({ member }: { member: MemberSummary }) {
           <Text style={styles.name} numberOfLines={1}>
             {profile.name || profile.email}
           </Text>
-          {unread > 0 && <Tag label={`${unread} nuevo${unread > 1 ? 's' : ''}`} tone="umber" />}
+          {unread > 0 && <Tag label={`${unread} nuevo${unread > 1 ? 's' : ''}`} tone="warn" />}
         </View>
         <T variant="small" numberOfLines={1}>
           {lastMessage?.sender === 'mentor' ? 'Tú: ' : ''}
           {preview}
         </T>
-        <T variant="small" style={{ color: colors.moss }}>
+        <T variant="small" style={{ color: colors.label }}>
           {station ? `Estación ${station.id} · ${station.stage}` : completed.length ? `${completed.length} estaciones completadas` : 'Sin estación desbloqueada'}
         </T>
       </View>
@@ -93,7 +93,7 @@ function MemberRow({ member }: { member: MemberSummary }) {
 const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingTop: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16 },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.forestSoft, alignItems: 'center', justifyContent: 'center' },
-  initial: { fontFamily: fonts.display, fontSize: 20, color: colors.forest },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  initial: { fontFamily: fonts.display, fontSize: 20, color: colors.accent },
   name: { fontFamily: fonts.sansSemi, fontSize: 16, color: colors.ink, flexShrink: 1 },
 });

@@ -20,10 +20,10 @@ export default function MoneyMapScreen() {
   const pct = (n: number) => Math.round((Math.max(0, n) / base) * 100);
 
   const parts = [
-    { label: 'Gastos', value: map.expenses, color: colors.forest },
-    { label: 'Deudas', value: map.debt, color: colors.umber },
-    { label: 'Ahorro', value: map.savings, color: colors.moss },
-    { label: free >= 0 ? 'Queda libre' : 'Falta', value: Math.abs(free), color: free >= 0 ? colors.brass : colors.umberSoft },
+    { label: 'Gastos', value: map.expenses, color: colors.accent },
+    { label: 'Deudas', value: map.debt, color: colors.warn },
+    { label: 'Ahorro', value: map.savings, color: colors.label },
+    { label: free >= 0 ? 'Queda libre' : 'Falta', value: Math.abs(free), color: free >= 0 ? colors.warm : colors.warnSoft },
   ];
 
   const save = () => {
@@ -65,7 +65,7 @@ export default function MoneyMapScreen() {
             {parts.map((p) => (
               <View key={p.label} style={styles.legend}>
                 <View style={[styles.swatch, { backgroundColor: p.color }]} />
-                <Text style={[styles.legendLabel, p.label === 'Falta' && { color: colors.umber }]}>{p.label}</Text>
+                <Text style={[styles.legendLabel, p.label === 'Falta' && { color: colors.warn }]}>{p.label}</Text>
                 <Text style={styles.legendPct}>{pct(p.value)}%</Text>
                 <Text style={styles.legendValue}>{formatCOP(p.value)}</Text>
               </View>

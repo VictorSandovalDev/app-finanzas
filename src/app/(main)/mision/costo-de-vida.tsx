@@ -92,7 +92,7 @@ function AddItem({ onAdd }: { onAdd: (label: string) => void }) {
   if (!open) {
     return (
       <Pressable onPress={() => setOpen(true)} style={styles.add}>
-        <Icon name="plus" size={16} color={colors.forest} weight="regular" />
+        <Icon name="plus" size={16} color={colors.accent} weight="regular" />
         <Text style={styles.addText}>Agregar otra</Text>
       </Pressable>
     );
@@ -109,9 +109,9 @@ const styles = StyleSheet.create({
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   total: { fontFamily: fonts.display, fontSize: 26, color: colors.ink, fontVariant: ['tabular-nums'] },
   groupHead: { flexDirection: 'row', alignItems: 'flex-end', gap: 12, paddingBottom: 6 },
-  subtotal: { fontFamily: fonts.sansSemi, fontSize: 15, color: colors.forest, fontVariant: ['tabular-nums'] },
+  subtotal: { fontFamily: fonts.sansSemi, fontSize: 15, color: colors.accent, fontVariant: ['tabular-nums'] },
   add: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 14 },
-  addText: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.forest },
+  addText: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.accent },
   addInput: {
     flex: 1,
     minWidth: 0,

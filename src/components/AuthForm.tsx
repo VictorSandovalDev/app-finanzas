@@ -74,7 +74,7 @@ export function AuthForm({ initialMode = 'signup', allowSignup = true, onDone }:
         onSubmitEditing={submit}
       />
 
-      {error && <T style={{ color: colors.umber }}>{error}</T>}
+      {error && <T style={{ color: colors.danger }}>{error}</T>}
       <Button label={mode === 'signup' ? 'Crear mi cuenta' : 'Entrar'} icon="arrowRight" loading={busy} disabled={!valid} onPress={submit} />
     </View>
   );
@@ -92,7 +92,7 @@ function Field({ label, ...props }: { label: string } & React.ComponentProps<typ
 const styles = StyleSheet.create({
   switch: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
   switchItem: { paddingVertical: 10, marginRight: 22, borderBottomWidth: 2, borderBottomColor: 'transparent', marginBottom: -1 },
-  switchActive: { borderBottomColor: colors.forest },
+  switchActive: { borderBottomColor: colors.accent },
   switchText: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.muted },
   label: { fontFamily: fonts.sansSemi, fontSize: 13, color: colors.inkSoft },
   input: {

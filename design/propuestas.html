@@ -1,0 +1,237 @@
+<title>Propuestas Viaje Financiero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap">
+<style>
+/* Presentation page: neutral frame; each proposal paints its own phones. */
+:root {
+  --page: #EEF1F5; --ink: #12192A; --muted: #5D6678; --line: #D9DEE6; --card: #FFFFFF; --pick: #12A664;
+  --sans: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --page: #0A0F18; --ink: #E8ECF3; --muted: #93A0B5; --line: #1E2736; --card: #121A27; color-scheme: dark } }
+:root[data-theme="dark"] { --page: #0A0F18; --ink: #E8ECF3; --muted: #93A0B5; --line: #1E2736; --card: #121A27; color-scheme: dark }
+body { background: var(--page); color: var(--ink); font-family: var(--sans); padding-inline: 20px; padding-block: 32px 64px; }
+.wrap { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+header.page { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+header.page .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+header.page h1 { margin: 0; font-size: clamp(28px, 4vw, 44px); line-height: 1.05; font-weight: 800; text-wrap: balance; }
+header.page p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.55; }
+.jump { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.jump a { text-decoration: none; color: var(--ink); border: 1px solid var(--line); background: var(--card); padding: 8px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; }
+.jump a:focus-visible, .jump a:hover { border-color: var(--ink); }
+section.prop { display: flex; flex-direction: column; gap: 20px; scroll-margin-top: 20px; }
+.prop-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+.prop-head > div { min-width: 0; max-width: 680px; display: flex; flex-direction: column; gap: 8px; }
+.prop-head .tag { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.prop-head h2 { margin: 0; font-size: clamp(22px, 3vw, 32px); font-weight: 800; }
+.prop-head p { margin: 0; color: var(--muted); line-height: 1.55; }
+.swatches { display: flex; gap: 6px; flex-wrap: wrap; max-width: 560px; }
+.sw { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px 4px 4px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sw i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,.08); }
+.rail { overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; }
+.phones { display: flex; gap: 22px; width: max-content; }
+.phone-wrap { display: flex; flex-direction: column; gap: 10px; scroll-snap-align: start; }
+.phone-wrap .cap { font-size: 13px; font-weight: 600; color: var(--muted); padding-left: 4px; }
+.phone { width: 320px; height: 668px; border-radius: 40px; padding: 10px; background: #0B0E14; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 20px 40px -24px rgba(10,15,30,.45); }
+.screen { position: relative; width: 100%; height: 100%; border-radius: 31px; overflow: hidden; display: flex; flex-direction: column; background: var(--s-bg); color: var(--s-ink); font-family: var(--s-font); }
+.notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 92px; height: 24px; background: #0B0E14; border-radius: 14px; z-index: 5; }
+.status { height: 38px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font-size: 12px; font-weight: 700; color: var(--s-status, var(--s-ink)); }
+.scroll { flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding: 6px 16px 16px; }
+svg.ic { width: 1em; height: 1em; flex: none; display: block; }
+
+/* Shared screen pieces, styled through each proposal's tokens */
+.row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.grow { flex: 1; min-width: 0; }
+.eyebrow-s { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--s-muted); }
+.h1 { font-size: 23px; line-height: 1.15; font-weight: 800; letter-spacing: -.01em; margin: 0; }
+.h2 { font-size: 16px; line-height: 1.3; font-weight: 700; margin: 0; }
+.p { font-size: 13px; line-height: 1.45; color: var(--s-muted); margin: 0; }
+.small { font-size: 11.5px; color: var(--s-muted); }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; padding: 6px 9px; border-radius: 999px; background: var(--s-chip); color: var(--s-ink); white-space: nowrap; }
+.chip .ic { font-size: 13px; }
+.bar { height: 6px; border-radius: 6px; background: var(--s-track); overflow: hidden; }
+.bar > b { display: block; height: 100%; border-radius: 6px; background: var(--s-accent); }
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: var(--s-btn-r); background: var(--s-accent); color: var(--s-on-accent); font-weight: 800; font-size: 14px; }
+.btn.ghost { background: transparent; color: var(--s-ink); border: 1px solid var(--s-line); }
+.card { background: var(--s-card); border: 1px solid var(--s-line); border-radius: var(--s-card-r); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.cover { height: 96px; border-radius: calc(var(--s-card-r) - 4px); position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 10px; color: #fff; }
+.cover .art { position: absolute; inset: 0; }
+.cover .big { position: absolute; right: 12px; top: 12px; font-size: 40px; opacity: .95; }
+.cover .lbl { position: relative; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; background: rgba(0,0,0,.28); padding: 4px 8px; border-radius: 6px; }
+.hscroll { display: flex; gap: 10px; overflow: hidden; }
+.mini { flex: none; width: 132px; border-radius: var(--s-card-r); background: var(--s-card); border: 1px solid var(--s-line); overflow: hidden; }
+.mini .cover { height: 70px; border-radius: 0; }
+.mini .body { padding: 9px 10px 11px; display: flex; flex-direction: column; gap: 4px; }
+.mini .t { font-size: 12.5px; font-weight: 700; line-height: 1.25; }
+.ring { width: 46px; height: 46px; flex: none; }
+.tabbar { flex: none; display: flex; justify-content: space-around; padding: 8px 6px 18px; background: var(--s-tab-bg); border-top: 1px solid var(--s-line); }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 700; color: var(--s-muted); width: 70px; }
+.tab .ic { font-size: 22px; }
+.tab.on { color: var(--s-tab-on); }
+.station { display: flex; gap: 12px; }
+.station .node { width: 38px; height: 38px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1.5px solid var(--s-line); background: var(--s-card); color: var(--s-muted); position: relative; z-index: 1; }
+.station .node.done { background: var(--s-accent); border-color: var(--s-accent); color: var(--s-on-accent); }
+.station .node.cur { border-color: var(--s-accent); color: var(--s-accent); box-shadow: 0 0 0 4px var(--s-glow); }
+.track { position: relative; display: flex; flex-direction: column; gap: 12px; }
+.track::before { content: ""; position: absolute; left: 18.5px; top: 18px; bottom: 18px; width: 2px; background: var(--s-line); }
+.lesson { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--s-line); }
+.lesson:first-child { border-top: 0; }
+.num { width: 28px; height: 28px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: var(--s-chip); color: var(--s-muted); }
+.num.done { background: var(--s-accent); color: var(--s-on-accent); }
+.num.cur { background: var(--s-ink); color: var(--s-bg); }
+.price { font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 999px; background: var(--s-price-bg); color: var(--s-price); white-space: nowrap; display: inline-flex; gap: 5px; align-items: center; }
+.bubble { max-width: 82%; padding: 10px 12px; border-radius: 16px; font-size: 13px; line-height: 1.45; }
+.bubble.them { background: var(--s-card); border: 1px solid var(--s-line); border-bottom-left-radius: 5px; align-self: flex-start; }
+.bubble.me { background: var(--s-accent); color: var(--s-on-accent); border-bottom-right-radius: 5px; align-self: flex-end; font-weight: 600; }
+.composer { flex: none; display: flex; gap: 8px; padding: 10px 14px 18px; border-top: 1px solid var(--s-line); background: var(--s-tab-bg); }
+.composer .in { flex: 1; height: 40px; border-radius: 20px; background: var(--s-card); border: 1px solid var(--s-line); display: flex; align-items: center; padding: 0 14px; font-size: 13px; color: var(--s-muted); }
+.round { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--s-accent); color: var(--s-on-accent); font-size: 18px; flex: none; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; font-weight: 800; background: var(--s-accent); color: var(--s-on-accent); position: relative; }
+.avatar .on { position: absolute; right: 0; bottom: 0; width: 11px; height: 11px; border-radius: 50%; background: #3BD671; border: 2px solid var(--s-bg); }
+.segment { display: flex; gap: 18px; border-bottom: 1px solid var(--s-line); }
+.segment span { padding: 8px 0; font-size: 12.5px; font-weight: 700; color: var(--s-muted); }
+.segment span.on { color: var(--s-ink); box-shadow: inset 0 -2px 0 var(--s-accent); }
+
+/* ── Proposal A · Ruta nocturna: Platzi-like dark navy, bright green ── */
+.pa { --s-bg: #0B1424; --s-card: #121F36; --s-chip: #1A2A47; --s-track: #1E2F4F; --s-line: rgba(160,185,230,.12); --s-ink: #EAF0FA; --s-muted: #8C9DBB; --s-accent: #2FE07D; --s-on-accent: #04230F; --s-glow: rgba(47,224,125,.18); --s-tab-bg: #0E1A2E; --s-tab-on: #2FE07D; --s-price-bg: rgba(255,182,72,.14); --s-price: #FFB648; --s-font: "Plus Jakarta Sans", system-ui, sans-serif; --s-card-r: 16px; --s-btn-r: 12px; }
+/* ── Proposal B · Aula clara: light, airy, navy ink, green progress ── */
+.pb { --s-bg: #F4F6FA; --s-card: #FFFFFF; --s-chip: #EBEFF5; --s-track: #E3E8F0; --s-line: #E3E8F0; --s-ink: #10203B; --s-muted: #5F6E87; --s-accent: #12A664; --s-on-accent: #FFFFFF; --s-glow: rgba(18,166,100,.14); --s-tab-bg: #FFFFFF; --s-tab-on: #10203B; --s-price-bg: #FFF1DD; --s-price: #B36B00; --s-font: "Manrope", system-ui, sans-serif; --s-card-r: 14px; --s-btn-r: 999px; }
+/* ── Proposal C · Escuela: navy header blocks over a white body, certificate gold ── */
+.pc { --s-bg: #FFFFFF; --s-card: #FFFFFF; --s-chip: #EEF2F7; --s-track: #E6EBF2; --s-line: #E6EBF2; --s-ink: #0E1A30; --s-muted: #64708A; --s-accent: #1BC47D; --s-on-accent: #04261A; --s-glow: rgba(27,196,125,.16); --s-tab-bg: #FFFFFF; --s-tab-on: #0E1A30; --s-price-bg: #0E1A30; --s-price: #FFFFFF; --s-font: "Plus Jakarta Sans", system-ui, sans-serif; --s-card-r: 18px; --s-btn-r: 14px; --navy: #0E1A30; --gold: #E7B85A; }
+.pc .hero { background: var(--navy); color: #F2F5FA; margin: -6px -16px 0; padding: 4px 16px 18px; display: flex; flex-direction: column; gap: 12px; border-radius: 0 0 26px 26px; }
+.pc .hero .p, .pc .hero .small, .pc .hero .eyebrow-s { color: #A9B4C9; }
+.pc .hero .chip { background: rgba(255,255,255,.08); color: #F2F5FA; }
+.pc .hero .bar { background: rgba(255,255,255,.12); }
+.pc .screen.dark-top { --s-status: #F2F5FA; }
+.pc .status-navy { background: var(--navy); }
+.pc .cert { background: linear-gradient(0deg, #FFF8E8, #FFF8E8); border: 1px solid #F1DDAF; }
+.pc .serif { font-family: "Fraunces", Georgia, serif; font-weight: 600; letter-spacing: -.01em; }
+@media (prefers-reduced-motion: no-preference) { .phone { transition: transform .25s ease; } .phone:hover { transform: translateY(-3px); } }
+@media (max-width: 520px) { body { padding-inline: 16px; } }
+</style>
+
+<div class="wrap">
+  <header class="page">
+    <span class="eyebrow">Viaje Financiero · Exploración de diseño</span>
+    <h1>Tres direcciones inspiradas en Platzi</h1>
+    <p>Mismo contenido y mismas cuatro pantallas en las tres: Inicio, Ruta, Estación y Mentor. Desliza cada fila para ver las pantallas y dime con cuál nos quedamos (o qué mezclar).</p>
+    <nav class="jump" aria-label="Ir a una propuesta">
+      <a href="#a">A · Ruta nocturna</a><a href="#b">B · Aula clara</a><a href="#c">C · Escuela</a>
+    </nav>
+  </header>
+  <div id="props"></div>
+</div>
+
+<script>
+const ICONS = {"compass:regular": ["M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24m0 192a88 88 0 1 1 88-88 88.1 88.1 0 0 1-88 88m44.42-143.16-64 32a8.05 8.05 0 0 0-3.58 3.58l-32 64A8 8 0 0 0 80 184a8.1 8.1 0 0 0 3.58-.84l64-32a8.05 8.05 0 0 0 3.58-3.58l32-64a8 8 0 0 0-10.74-10.74M138 138l-40.11 20.11L118 118l40.15-20.07Z"], "compass:fill": ["M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24m51.58 57.79-32 64a4.08 4.08 0 0 1-1.79 1.79l-64 32a4 4 0 0 1-5.37-5.37l32-64a4.08 4.08 0 0 1 1.79-1.79l64-32a4 4 0 0 1 5.37 5.37"], "plant:regular": ["M247.63 47.89a8 8 0 0 0-7.52-7.52c-51.76-3-93.32 12.74-111.18 42.22-11.8 19.49-11.78 43.16-.16 65.74a71.3 71.3 0 0 0-14.17 27L98.33 159c7.82-16.33 7.52-33.35-1-47.49-13.2-21.79-43.67-33.47-81.5-31.25a8 8 0 0 0-7.52 7.52c-2.23 37.83 9.46 68.3 31.25 81.5A45.8 45.8 0 0 0 63.44 176 54.6 54.6 0 0 0 87 170.33l25 25V224a8 8 0 0 0 16 0v-29.49a55.6 55.6 0 0 1 12.27-35 73.9 73.9 0 0 0 33.31 8.4 60.9 60.9 0 0 0 31.83-8.86c29.48-17.84 45.26-59.4 42.22-111.16M47.81 155.6C32.47 146.31 23.79 124.32 24 96c28.32-.24 50.31 8.47 59.6 23.81 4.85 8 5.64 17.33 2.46 26.94l-24.41-24.41a8 8 0 0 0-11.31 11.31l24.41 24.41c-9.61 3.18-18.93 2.39-26.94-2.46m149.31-10.22c-13.4 8.11-29.15 8.73-45.15 2l53.69-53.7a8 8 0 0 0-11.31-11.31L140.65 136c-6.76-16-6.15-31.76 2-45.15 13.94-23 47-35.82 89.33-34.83.96 42.32-11.84 75.42-34.86 89.36"], "plant:fill": ["M205.41 159.07a60.9 60.9 0 0 1-31.83 8.86 71.7 71.7 0 0 1-27.36-5.66A55.55 55.55 0 0 0 136 194.51V224a8 8 0 0 1-8.53 8 8.18 8.18 0 0 1-7.47-8.25v-12.44l-38.62-38.62A52.5 52.5 0 0 1 63.44 176a45.8 45.8 0 0 1-23.92-6.67C17.73 156.09 6 125.62 8.27 87.79a8 8 0 0 1 7.52-7.52c37.83-2.23 68.3 9.46 81.5 31.25a46 46 0 0 1 6.45 28.48 4 4 0 0 1-6.89 2.43l-19.2-20.1a8 8 0 0 0-11.31 11.31l53.88 55.25c.06-.78.13-1.56.21-2.33a68.56 68.56 0 0 1 18.64-39.46l50.59-53.46a8 8 0 0 0-11.31-11.32l-49 51.82a4 4 0 0 1-6.78-1.74c-4.74-17.48-2.65-34.88 6.4-49.82 17.86-29.48 59.42-45.26 111.18-42.22a8 8 0 0 1 7.52 7.52c3 51.77-12.78 93.33-42.26 111.19"], "door:regular": ["M232 216h-24V40a16 16 0 0 0-16-16H64a16 16 0 0 0-16 16v176H24a8 8 0 0 0 0 16h208a8 8 0 0 0 0-16m-40 0h-16V40h16ZM64 40h96v176H64Zm80 92a12 12 0 1 1-12-12 12 12 0 0 1 12 12"], "door:fill": ["M232 216h-24V40a16 16 0 0 0-16-16H64a16 16 0 0 0-16 16v176H24a8 8 0 0 0 0 16h208a8 8 0 0 0 0-16m-64 0H64V40h104Zm-40-84a12 12 0 1 1 12 12 12 12 0 0 1-12-12"], "map:regular": ["M228.92 49.69a8 8 0 0 0-6.86-1.45l-61.13 15.28-61.35-30.68a8 8 0 0 0-5.52-.6l-64 16A8 8 0 0 0 24 56v144a8 8 0 0 0 9.94 7.76l61.13-15.28 61.35 30.68a8.15 8.15 0 0 0 3.58.84 8 8 0 0 0 1.94-.24l64-16A8 8 0 0 0 232 200V56a8 8 0 0 0-3.08-6.31M104 52.94l48 24v126.12l-48-24Zm-64 9.31 48-12v127.5l-48 12Zm176 131.5-48 12V78.25l48-12Z"], "map:fill": ["M228.92 49.69a8 8 0 0 0-6.86-1.45l-61.13 15.28-61.35-30.68a8 8 0 0 0-5.52-.6l-64 16A8 8 0 0 0 24 56v144a8 8 0 0 0 9.94 7.76l61.13-15.28 61.35 30.68a8.15 8.15 0 0 0 3.58.84 8 8 0 0 0 1.94-.24l64-16A8 8 0 0 0 232 200V56a8 8 0 0 0-3.08-6.31M96 176a8 8 0 0 0-1.94.24L40 189.75V62.25l55.07-13.77.93.46Zm120 17.75-55.07 13.77-.93-.46V80a8 8 0 0 0 1.94-.23L216 66.25Z"], "signpost:regular": ["M246 106.65 212.33 69.3a16 16 0 0 0-11.89-5.3H136V32a8 8 0 0 0-16 0v32H40a16 16 0 0 0-16 16v64a16 16 0 0 0 16 16h80v64a8 8 0 0 0 16 0v-64h64.44a16 16 0 0 0 11.89-5.3L246 117.35a8 8 0 0 0 0-10.7M200.44 144H40V80h160.44l28.8 32Z"], "signpost:fill": ["m246 117.35-33.67 37.35a16 16 0 0 1-11.89 5.3H136v64a8 8 0 0 1-16 0v-64H40a16 16 0 0 1-16-16V80a16 16 0 0 1 16-16h80V32a8 8 0 0 1 16 0v32h64.44a16 16 0 0 1 11.89 5.3L246 106.65a8 8 0 0 1 0 10.7"], "house:regular": ["M240 208h-16v-72l2.34 2.34A8 8 0 0 0 237.66 127l-98.35-98.32a16 16 0 0 0-22.62 0L18.34 127a8 8 0 0 0 11.32 11.31L32 136v72H16a8 8 0 0 0 0 16h224a8 8 0 0 0 0-16M48 120l80-80 80 80v88h-48v-56a8 8 0 0 0-8-8h-48a8 8 0 0 0-8 8v56H48Zm96 88h-32v-48h32Z"], "house:fill": ["M240 208h-16v-72l2.34 2.34A8 8 0 0 0 237.66 127l-98.35-98.32a16 16 0 0 0-22.62 0L18.34 127a8 8 0 0 0 11.32 11.31L32 136v72H16a8 8 0 0 0 0 16h224a8 8 0 0 0 0-16m-88 0h-48v-48a4 4 0 0 1 4-4h40a4 4 0 0 1 4 4Z"], "lock:regular": ["M208 80h-32V56a48 48 0 0 0-96 0v24H48a16 16 0 0 0-16 16v112a16 16 0 0 0 16 16h160a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16M96 56a32 32 0 0 1 64 0v24H96Zm112 152H48V96h160z"], "lock:fill": ["M208 80h-32V56a48 48 0 0 0-96 0v24H48a16 16 0 0 0-16 16v112a16 16 0 0 0 16 16h160a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16M96 56a32 32 0 0 1 64 0v24H96Z"], "check:regular": ["m229.66 77.66-128 128a8 8 0 0 1-11.32 0l-56-56a8 8 0 0 1 11.32-11.32L96 188.69 218.34 66.34a8 8 0 0 1 11.32 11.32"], "check:fill": ["M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16m-10.34 45.66-96 96a8 8 0 0 1-11.32 0l-40-40a8 8 0 0 1 11.32-11.32L104 164.69l90.34-90.35a8 8 0 0 1 11.32 11.32"], "flame:regular": ["M173.79 51.48a221.3 221.3 0 0 0-41.67-34.34 8 8 0 0 0-8.24 0 221.3 221.3 0 0 0-41.67 34.34C54.59 80.48 40 112.47 40 144a88 88 0 0 0 176 0c0-31.53-14.59-63.52-42.21-92.52M96 184c0-27.67 22.53-47.28 32-54.3 9.48 7 32 26.63 32 54.3a32 32 0 0 1-64 0m77.27 15.93A47.8 47.8 0 0 0 176 184c0-44-42.09-69.79-43.88-70.86a8 8 0 0 0-8.24 0C122.09 114.21 80 140 80 184a47.8 47.8 0 0 0 2.73 15.93A71.88 71.88 0 0 1 56 144c0-34.41 20.4-63.15 37.52-81.19A216.2 216.2 0 0 1 128 33.54a215.8 215.8 0 0 1 34.48 29.27C193.49 95.5 200 125 200 144a71.88 71.88 0 0 1-26.73 55.93"], "flame:fill": ["M173.79 51.48a221.3 221.3 0 0 0-41.67-34.34 8 8 0 0 0-8.24 0 221.3 221.3 0 0 0-41.67 34.34C54.59 80.48 40 112.47 40 144a88 88 0 0 0 176 0c0-31.53-14.59-63.52-42.21-92.52M96 184c0-27.67 22.53-47.28 32-54.3 9.48 7 32 26.63 32 54.3a32 32 0 0 1-64 0"], "diamond:regular": ["m235.33 116.72-96.05-96.06a16 16 0 0 0-22.56 0l-96 96.06a16 16 0 0 0 0 22.56l96.05 96.06a16 16 0 0 0 22.56 0l96.05-96.06a16 16 0 0 0 0-22.56ZM128 224l-96-96 96-96 96 96Z"], "diamond:fill": ["M240 128a15.85 15.85 0 0 1-4.67 11.28l-96.05 96.06a16 16 0 0 1-22.56 0l-96-96.06a16 16 0 0 1 0-22.56l96.05-96.06a16 16 0 0 1 22.56 0l96.05 96.06A15.85 15.85 0 0 1 240 128"], "chat:regular": ["M168 112a8 8 0 0 1-8 8H96a8 8 0 0 1 0-16h64a8 8 0 0 1 8 8m-8 24H96a8 8 0 0 0 0 16h64a8 8 0 0 0 0-16m72-8a104 104 0 0 1-152.88 91.82l-34.05 11.35a16 16 0 0 1-20.24-20.24l11.35-34.05A104 104 0 1 1 232 128m-16 0a88 88 0 1 0-164.19 44.06 8 8 0 0 1 .66 6.54L40 216l37.4-12.47a7.9 7.9 0 0 1 2.53-.42 8 8 0 0 1 4 1.08A88 88 0 0 0 216 128"], "chat:fill": ["M128 24a104 104 0 0 0-91.82 152.88l-11.35 34.05a16 16 0 0 0 20.24 20.24l34.05-11.35A104 104 0 1 0 128 24m32 128H96a8 8 0 0 1 0-16h64a8 8 0 0 1 0 16m0-32H96a8 8 0 0 1 0-16h64a8 8 0 0 1 0 16"], "home:regular": ["m219.31 108.68-80-80a16 16 0 0 0-22.62 0l-80 80A15.87 15.87 0 0 0 32 120v96a8 8 0 0 0 8 8h64a8 8 0 0 0 8-8v-56h32v56a8 8 0 0 0 8 8h64a8 8 0 0 0 8-8v-96a15.87 15.87 0 0 0-4.69-11.32M208 208h-48v-56a8 8 0 0 0-8-8h-48a8 8 0 0 0-8 8v56H48v-88l80-80 80 80Z"], "home:fill": ["M224 120v96a8 8 0 0 1-8 8h-56a8 8 0 0 1-8-8v-52a4 4 0 0 0-4-4h-40a4 4 0 0 0-4 4v52a8 8 0 0 1-8 8H40a8 8 0 0 1-8-8v-96a16 16 0 0 1 4.69-11.31l80-80a16 16 0 0 1 22.62 0l80 80A16 16 0 0 1 224 120"], "passport:regular": ["M75.19 198.4a8 8 0 0 0 11.21-1.6 52 52 0 0 1 83.2 0 8 8 0 1 0 12.8-9.6 67.9 67.9 0 0 0-27.4-21.69 40 40 0 1 0-53.94 0A67.9 67.9 0 0 0 73.6 187.2a8 8 0 0 0 1.59 11.2M128 112a24 24 0 1 1-24 24 24 24 0 0 1 24-24m72-88H56a16 16 0 0 0-16 16v176a16 16 0 0 0 16 16h144a16 16 0 0 0 16-16V40a16 16 0 0 0-16-16m0 192H56V40h144ZM88 64a8 8 0 0 1 8-8h64a8 8 0 0 1 0 16H96a8 8 0 0 1-8-8"], "passport:fill": ["M200 24H56a16 16 0 0 0-16 16v176a16 16 0 0 0 16 16h144a16 16 0 0 0 16-16V40a16 16 0 0 0-16-16M96 48h64a8 8 0 0 1 0 16H96a8 8 0 0 1 0-16m84.81 150.4a8 8 0 0 1-11.21-1.6 52 52 0 0 0-83.2 0 8 8 0 1 1-12.8-9.6 67.9 67.9 0 0 1 27.4-21.69 40 40 0 1 1 53.94 0 67.9 67.9 0 0 1 27.46 21.69 8 8 0 0 1-1.59 11.2M152 136a24 24 0 1 1-24-24 24 24 0 0 1 24 24"], "arrow:regular": ["m221.66 133.66-72 72a8 8 0 0 1-11.32-11.32L196.69 136H40a8 8 0 0 1 0-16h156.69l-58.35-58.34a8 8 0 0 1 11.32-11.32l72 72a8 8 0 0 1 0 11.32"], "arrow:fill": ["m221.66 133.66-72 72A8 8 0 0 1 136 200v-64H40a8 8 0 0 1 0-16h96V56a8 8 0 0 1 13.66-5.66l72 72a8 8 0 0 1 0 11.32"], "play:regular": ["M232.4 114.49 88.32 26.35a16 16 0 0 0-16.2-.3A15.86 15.86 0 0 0 64 39.87v176.26A15.94 15.94 0 0 0 80 232a16.07 16.07 0 0 0 8.36-2.35l144.04-88.14a15.81 15.81 0 0 0 0-27ZM80 215.94V40l143.83 88Z"], "play:fill": ["M240 128a15.74 15.74 0 0 1-7.6 13.51L88.32 229.65a16 16 0 0 1-16.2.3A15.86 15.86 0 0 1 64 216.13V39.87a15.86 15.86 0 0 1 8.12-13.82 16 16 0 0 1 16.2.3l144.08 88.14A15.74 15.74 0 0 1 240 128"], "mic:regular": ["M128 176a48.05 48.05 0 0 0 48-48V64a48 48 0 0 0-96 0v64a48.05 48.05 0 0 0 48 48M96 64a32 32 0 0 1 64 0v64a32 32 0 0 1-64 0Zm40 143.6V240a8 8 0 0 1-16 0v-32.4A80.11 80.11 0 0 1 48 128a8 8 0 0 1 16 0 64 64 0 0 0 128 0 8 8 0 0 1 16 0 80.11 80.11 0 0 1-72 79.6"], "mic:fill": ["M80 128V64a48 48 0 0 1 96 0v64a48 48 0 0 1-96 0m128 0a8 8 0 0 0-16 0 64 64 0 0 1-128 0 8 8 0 0 0-16 0 80.11 80.11 0 0 0 72 79.6V240a8 8 0 0 0 16 0v-32.4a80.11 80.11 0 0 0 72-79.6"], "send:regular": ["m231.87 114-168-95.89a16 16 0 0 0-22.95 19.23L71.55 128l-30.63 90.67A16 16 0 0 0 56 240a16.15 16.15 0 0 0 7.93-2.1l167.92-96.05a16 16 0 0 0 .05-27.89ZM56 224a.6.6 0 0 0 0-.12L85.74 136H144a8 8 0 0 0 0-16H85.74L56.06 32.16A.5.5 0 0 0 56 32l168 95.83Z"], "send:fill": ["M240 127.89a16 16 0 0 1-8.18 14L63.9 237.9A16.15 16.15 0 0 1 56 240a16 16 0 0 1-15-21.33l27-79.95a4 4 0 0 1 3.72-2.72H144a8 8 0 0 0 8-8.53 8.19 8.19 0 0 0-8.26-7.47h-72a4 4 0 0 1-3.79-2.72l-27-79.94a16 16 0 0 1 22.89-19.27l168 95.89a16 16 0 0 1 8.16 13.93"], "scroll:regular": ["M96 104a8 8 0 0 1 8-8h64a8 8 0 0 1 0 16h-64a8 8 0 0 1-8-8m8 40h64a8 8 0 0 0 0-16h-64a8 8 0 0 0 0 16m128 48a32 32 0 0 1-32 32H88a32 32 0 0 1-32-32V64a16 16 0 0 0-32 0c0 5.74 4.83 9.62 4.88 9.66A8 8 0 0 1 24 88a7.9 7.9 0 0 1-4.79-1.61C18.05 85.54 8 77.61 8 64a32 32 0 0 1 32-32h136a32 32 0 0 1 32 32v104h8a8 8 0 0 1 4.8 1.6c1.2.86 11.2 8.79 11.2 22.4M96.26 173.48A8.07 8.07 0 0 1 104 168h88V64a16 16 0 0 0-16-16H67.69A31.7 31.7 0 0 1 72 64v128a16 16 0 0 0 32 0c0-5.74-4.83-9.62-4.88-9.66a7.82 7.82 0 0 1-2.86-8.86M216 192a12.58 12.58 0 0 0-3.23-8h-94a27 27 0 0 1 1.21 8 31.8 31.8 0 0 1-4.29 16H200a16 16 0 0 0 16-16"], "scroll:fill": ["M220.8 169.6a8 8 0 0 0-4.8-1.6h-8V64a32 32 0 0 0-32-32H40A32 32 0 0 0 8 64c0 13.61 10.05 21.54 11.2 22.4A7.9 7.9 0 0 0 24 88a8 8 0 0 0 4.87-14.33C28.83 73.62 24 69.74 24 64a16 16 0 0 1 32 0v128a32 32 0 0 0 32 32h112a32 32 0 0 0 32-32c0-13.61-10-21.54-11.2-22.4M104 96h64a8 8 0 0 1 0 16h-64a8 8 0 0 1 0-16m-8 40a8 8 0 0 1 8-8h64a8 8 0 0 1 0 16h-64a8 8 0 0 1-8-8m104 72h-92.29a31.8 31.8 0 0 0 4.29-16 27 27 0 0 0-1.21-8h102a12.58 12.58 0 0 1 3.23 8A16 16 0 0 1 200 208"], "quotes:regular": ["M100 56H40a16 16 0 0 0-16 16v64a16 16 0 0 0 16 16h60v8a32 32 0 0 1-32 32 8 8 0 0 0 0 16 48.05 48.05 0 0 0 48-48V72a16 16 0 0 0-16-16m0 80H40V72h60Zm116-80h-60a16 16 0 0 0-16 16v64a16 16 0 0 0 16 16h60v8a32 32 0 0 1-32 32 8 8 0 0 0 0 16 48.05 48.05 0 0 0 48-48V72a16 16 0 0 0-16-16m0 80h-60V72h60Z"], "quotes:fill": ["M116 72v88a48.05 48.05 0 0 1-48 48 8 8 0 0 1 0-16 32 32 0 0 0 32-32v-8H40a16 16 0 0 1-16-16V72a16 16 0 0 1 16-16h60a16 16 0 0 1 16 16m100-16h-60a16 16 0 0 0-16 16v64a16 16 0 0 0 16 16h60v8a32 32 0 0 1-32 32 8 8 0 0 0 0 16 48.05 48.05 0 0 0 48-48V72a16 16 0 0 0-16-16"], "group:regular": ["M244.8 150.4a8 8 0 0 1-11.2-1.6A51.6 51.6 0 0 0 192 128a8 8 0 0 1-7.37-4.89 8 8 0 0 1 0-6.22A8 8 0 0 1 192 112a24 24 0 1 0-23.24-30 8 8 0 1 1-15.5-4A40 40 0 1 1 219 117.51a67.94 67.94 0 0 1 27.43 21.68 8 8 0 0 1-1.63 11.21M190.92 212a8 8 0 1 1-13.84 8 57 57 0 0 0-98.16 0 8 8 0 1 1-13.84-8 72.06 72.06 0 0 1 33.74-29.92 48 48 0 1 1 58.36 0A72.06 72.06 0 0 1 190.92 212M128 176a32 32 0 1 0-32-32 32 32 0 0 0 32 32m-56-56a8 8 0 0 0-8-8 24 24 0 1 1 23.24-30 8 8 0 1 0 15.5-4A40 40 0 1 0 37 117.51a67.94 67.94 0 0 0-27.4 21.68 8 8 0 1 0 12.8 9.61A51.6 51.6 0 0 1 64 128a8 8 0 0 0 8-8"], "group:fill": ["M64.12 147.8a4 4 0 0 1-4 4.2H16a8 8 0 0 1-7.8-6.17 8.35 8.35 0 0 1 1.62-6.93A67.8 67.8 0 0 1 37 117.51a40 40 0 1 1 66.46-35.8 3.94 3.94 0 0 1-2.27 4.18A64.08 64.08 0 0 0 64 144c0 1.28 0 2.54.12 3.8m182-8.91A67.76 67.76 0 0 0 219 117.51a40 40 0 1 0-66.46-35.8 3.94 3.94 0 0 0 2.27 4.18A64.08 64.08 0 0 1 192 144c0 1.28 0 2.54-.12 3.8a4 4 0 0 0 4 4.2H240a8 8 0 0 0 7.8-6.17 8.33 8.33 0 0 0-1.63-6.94Zm-89 43.18a48 48 0 1 0-58.37 0A72.13 72.13 0 0 0 65.07 212 8 8 0 0 0 72 224h112a8 8 0 0 0 6.93-12 72.15 72.15 0 0 0-33.74-29.93Z"], "seal:regular": ["M225.86 102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28 23.51 138.44 16 128 16s-18.27 7.51-25.18 14.14c-3.94 3.77-8 7.67-11.57 9.14-3.25 1.36-8.69 1.44-13.94 1.52-9.76.15-20.82.31-28.51 8s-7.8 18.75-8 28.51c-.08 5.25-.16 10.67-1.52 13.94-1.47 3.56-5.37 7.63-9.14 11.57C23.51 109.72 16 117.56 16 128s7.51 18.27 14.14 25.18c3.77 3.94 7.67 8 9.14 11.57 1.36 3.27 1.44 8.69 1.52 13.94.15 9.76.31 20.82 8 28.51s18.75 7.85 28.51 8c5.25.08 10.67.16 13.94 1.52 3.56 1.47 7.63 5.37 11.57 9.14 6.9 6.63 14.74 14.14 25.18 14.14s18.27-7.51 25.18-14.14c3.94-3.77 8-7.67 11.57-9.14 3.27-1.36 8.69-1.44 13.94-1.52 9.76-.15 20.82-.31 28.51-8s7.85-18.75 8-28.51c.08-5.25.16-10.67 1.52-13.94 1.47-3.56 5.37-7.63 9.14-11.57 6.63-6.9 14.14-14.74 14.14-25.18s-7.51-18.27-14.14-25.18m-11.55 39.29c-4.79 5-9.75 10.17-12.38 16.52-2.52 6.1-2.63 13.07-2.73 19.82-.1 7-.21 14.33-3.32 17.43s-10.39 3.22-17.43 3.32c-6.75.1-13.72.21-19.82 2.73-6.35 2.63-11.52 7.59-16.52 12.38S132 224 128 224s-9.15-4.92-14.11-9.69-10.17-9.75-16.52-12.38c-6.1-2.52-13.07-2.63-19.82-2.73-7-.1-14.33-.21-17.43-3.32s-3.22-10.39-3.32-17.43c-.1-6.75-.21-13.72-2.73-19.82-2.63-6.35-7.59-11.52-12.38-16.52S32 132 32 128s4.92-9.15 9.69-14.11 9.75-10.17 12.38-16.52c2.52-6.1 2.63-13.07 2.73-19.82.1-7 .21-14.33 3.32-17.43s10.39-3.22 17.43-3.32c6.75-.1 13.72-.21 19.82-2.73 6.35-2.63 11.52-7.59 16.52-12.38S124 32 128 32s9.15 4.92 14.11 9.69 10.17 9.75 16.52 12.38c6.1 2.52 13.07 2.63 19.82 2.73 7 .1 14.33.21 17.43 3.32s3.22 10.39 3.32 17.43c.1 6.75.21 13.72 2.73 19.82 2.63 6.35 7.59 11.52 12.38 16.52S224 124 224 128s-4.92 9.15-9.69 14.11m-40.65-43.77a8 8 0 0 1 0 11.32l-56 56a8 8 0 0 1-11.32 0l-24-24a8 8 0 0 1 11.32-11.32L112 148.69l50.34-50.35a8 8 0 0 1 11.32 0"], "seal:fill": ["M225.86 102.82c-3.77-3.94-7.67-8-9.14-11.57-1.36-3.27-1.44-8.69-1.52-13.94-.15-9.76-.31-20.82-8-28.51s-18.75-7.85-28.51-8c-5.25-.08-10.67-.16-13.94-1.52-3.56-1.47-7.63-5.37-11.57-9.14C146.28 23.51 138.44 16 128 16s-18.27 7.51-25.18 14.14c-3.94 3.77-8 7.67-11.57 9.14-3.25 1.36-8.69 1.44-13.94 1.52-9.76.15-20.82.31-28.51 8s-7.8 18.75-8 28.51c-.08 5.25-.16 10.67-1.52 13.94-1.47 3.56-5.37 7.63-9.14 11.57C23.51 109.72 16 117.56 16 128s7.51 18.27 14.14 25.18c3.77 3.94 7.67 8 9.14 11.57 1.36 3.27 1.44 8.69 1.52 13.94.15 9.76.31 20.82 8 28.51s18.75 7.85 28.51 8c5.25.08 10.67.16 13.94 1.52 3.56 1.47 7.63 5.37 11.57 9.14 6.9 6.63 14.74 14.14 25.18 14.14s18.27-7.51 25.18-14.14c3.94-3.77 8-7.67 11.57-9.14 3.27-1.36 8.69-1.44 13.94-1.52 9.76-.15 20.82-.31 28.51-8s7.85-18.75 8-28.51c.08-5.25.16-10.67 1.52-13.94 1.47-3.56 5.37-7.63 9.14-11.57 6.63-6.9 14.14-14.74 14.14-25.18s-7.51-18.27-14.14-25.18m-52.2 6.84-56 56a8 8 0 0 1-11.32 0l-24-24a8 8 0 0 1 11.32-11.32L112 148.69l50.34-50.35a8 8 0 0 1 11.32 11.32"], "caret:regular": ["m181.66 133.66-80 80a8 8 0 0 1-11.32-11.32L164.69 128 90.34 53.66a8 8 0 0 1 11.32-11.32l80 80a8 8 0 0 1 0 11.32"], "caret:fill": ["m181.66 133.66-80 80A8 8 0 0 1 88 208V48a8 8 0 0 1 13.66-5.66l80 80a8 8 0 0 1 0 11.32"], "trophy:regular": ["M232 64h-24V48a8 8 0 0 0-8-8H56a8 8 0 0 0-8 8v16H24A16 16 0 0 0 8 80v16a40 40 0 0 0 40 40h3.65A80.13 80.13 0 0 0 120 191.61V216H96a8 8 0 0 0 0 16h64a8 8 0 0 0 0-16h-24v-24.42c31.94-3.23 58.44-25.64 68.08-55.58H208a40 40 0 0 0 40-40V80a16 16 0 0 0-16-16M48 120a24 24 0 0 1-24-24V80h24v32q0 4 .39 8Zm144-8.9c0 35.52-29 64.64-64 64.9a64 64 0 0 1-64-64V56h128ZM232 96a24 24 0 0 1-24 24h-.5a82 82 0 0 0 .5-8.9V80h24Z"], "trophy:fill": ["M232 64h-24V48a8 8 0 0 0-8-8H56a8 8 0 0 0-8 8v16H24A16 16 0 0 0 8 80v16a40 40 0 0 0 40 40h3.65A80.13 80.13 0 0 0 120 191.61V216H96a8 8 0 0 0 0 16h64a8 8 0 0 0 0-16h-24v-24.42c31.94-3.23 58.44-25.64 68.08-55.58H208a40 40 0 0 0 40-40V80a16 16 0 0 0-16-16M48 120a24 24 0 0 1-24-24V80h24v32q0 4 .39 8Zm184-24a24 24 0 0 1-24 24h-.5a82 82 0 0 0 .5-8.9V80h24Z"], "bell:regular": ["M221.8 175.94c-5.55-9.56-13.8-36.61-13.8-71.94a80 80 0 1 0-160 0c0 35.34-8.26 62.38-13.81 71.94A16 16 0 0 0 48 200h40.81a40 40 0 0 0 78.38 0H208a16 16 0 0 0 13.8-24.06M128 216a24 24 0 0 1-22.62-16h45.24A24 24 0 0 1 128 216m-80-32c7.7-13.24 16-43.92 16-80a64 64 0 1 1 128 0c0 36.05 8.28 66.73 16 80Z"], "bell:fill": ["M221.8 175.94c-5.55-9.56-13.8-36.61-13.8-71.94a80 80 0 1 0-160 0c0 35.34-8.26 62.38-13.81 71.94A16 16 0 0 0 48 200h40.81a40 40 0 0 0 78.38 0H208a16 16 0 0 0 13.8-24.06M128 216a24 24 0 0 1-22.62-16h45.24A24 24 0 0 1 128 216"], "back:regular": ["M224 128a8 8 0 0 1-8 8H59.31l58.35 58.34a8 8 0 0 1-11.32 11.32l-72-72a8 8 0 0 1 0-11.32l72-72a8 8 0 0 1 11.32 11.32L59.31 120H216a8 8 0 0 1 8 8"], "back:fill": ["M224 128a8 8 0 0 1-8 8h-96v64a8 8 0 0 1-13.66 5.66l-72-72a8 8 0 0 1 0-11.32l72-72A8 8 0 0 1 120 56v64h96a8 8 0 0 1 8 8"], "lightning:regular": ["M215.79 118.17a8 8 0 0 0-5-5.66L153.18 90.9l14.66-73.33a8 8 0 0 0-13.69-7l-112 120a8 8 0 0 0 3 13l57.63 21.61-14.62 73.25a8 8 0 0 0 13.69 7l112-120a8 8 0 0 0 1.94-7.26M109.37 214l10.47-52.38a8 8 0 0 0-5-9.06L62 132.71l84.62-90.66-10.46 52.38a8 8 0 0 0 5 9.06l52.8 19.8Z"], "lightning:fill": ["m213.85 125.46-112 120a8 8 0 0 1-13.69-7l14.66-73.33-57.63-21.64a8 8 0 0 1-3-13l112-120a8 8 0 0 1 13.69 7l-14.7 73.41 57.63 21.61a8 8 0 0 1 3 12.95Z"], "clock:regular": ["M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24m0 192a88 88 0 1 1 88-88 88.1 88.1 0 0 1-88 88m64-88a8 8 0 0 1-8 8h-56a8 8 0 0 1-8-8V72a8 8 0 0 1 16 0v48h48a8 8 0 0 1 8 8"], "clock:fill": ["M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24m56 112h-56a8 8 0 0 1-8-8V72a8 8 0 0 1 16 0v48h48a8 8 0 0 1 0 16"]};
+function ic(name, weight = 'regular') {
+  const paths = ICONS[name + ':' + weight] || ICONS[name + ':regular'] || [];
+  return `<svg class="ic" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${paths.map(d => `<path d="${d}"/>`).join('')}</svg>`;
+}
+function ring(pct, color, track) {
+  const r = 19, c = 2 * Math.PI * r;
+  return `<svg class="ring" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="${r}" fill="none" stroke="${track}" stroke-width="5"/><circle cx="23" cy="23" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c * pct / 100} ${c}" transform="rotate(-90 23 23)"/><text x="23" y="27" text-anchor="middle" font-size="11" font-weight="800" fill="currentColor">${pct}%</text></svg>`;
+}
+/* Cover art per station: flat colour, concentric arcs, the station icon. */
+const COVERS = {
+  1: ['#1B6B4A', '#2FA36F', 'compass'],
+  2: ['#1E4E8C', '#3C7DD9', 'plant'],
+  3: ['#7A3F1C', '#C46A2E', 'door'],
+  4: ['#3D3F8F', '#6366C9', 'map'],
+};
+function cover(id, label, h) {
+  const [a, b, icon] = COVERS[id];
+  return `<div class="cover" style="background:${a};${h ? 'height:' + h + 'px' : ''}">
+    <svg class="art" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><circle cx="250" cy="20" r="90" fill="none" stroke="${b}" stroke-width="16" opacity=".55"/><circle cx="250" cy="20" r="52" fill="none" stroke="${b}" stroke-width="10" opacity=".75"/></svg>
+    <span class="big">${ic(icon)}</span>${label ? `<span class="lbl">${label}</span>` : ''}</div>`;
+}
+const status = `<div class="status"><span>9:41</span><span style="display:flex;gap:5px;align-items:center">${ic('lightning','fill')}100%</span></div>`;
+function tabbar(on) {
+  const t = [['home', 'Inicio'], ['map', 'Ruta'], ['chat', 'Mentor'], ['passport', 'Perfil']];
+  return `<nav class="tabbar">${t.map(([i, l]) => `<span class="tab ${l === on ? 'on' : ''}">${ic(i, l === on ? 'fill' : 'regular')}${l}</span>`).join('')}</nav>`;
+}
+
+/* ── Screens (shared content; each proposal adjusts layout where it differs) ── */
+function home(p) {
+  const C = p === 'pc';
+  const greet = `<div class="row" style="justify-content:space-between"><div><div class="eyebrow-s">Lunes 6 de octubre</div><h1 class="h1 ${C ? 'serif' : ''}" style="${C ? 'font-size:26px' : ''}">Hola, Diana</h1></div><span class="avatar" style="width:36px;height:36px;font-size:14px">D</span></div>`;
+  const chips = `<div class="row" style="gap:6px;flex-wrap:wrap"><span class="chip"><span style="color:#FF9F43">${ic('flame','fill')}</span>7 días</span><span class="chip"><span style="color:#5AA9FF">${ic('diamond','fill')}</span>340 XP</span><span class="chip">${ic('compass')}Estación 2 de 6</span></div>`;
+  const cont = `<div class="card" style="${C ? 'margin-top:-2px;box-shadow:0 12px 24px -16px rgba(14,26,48,.35)' : ''}">
+      ${cover(2, 'Estación 2 · Entender')}
+      <div><div class="eyebrow-s">Continúa donde quedaste</div><div class="h2" style="margin-top:3px">Dibuja tu Mapa del Dinero</div></div>
+      <div class="row"><div class="grow bar"><b style="width:50%"></b></div><span class="small" style="font-weight:700">1 de 2</span></div>
+      <div class="btn">${ic('play','fill')}Continuar misión</div></div>`;
+  const route = `<div class="row" style="justify-content:space-between"><div class="h2">Tu ruta</div><span class="small" style="font-weight:700;color:var(--s-accent)">Ver todo</span></div>
+    <div class="hscroll">
+      <div class="mini">${cover(1, '', 70)}<div class="body"><span class="small" style="color:var(--s-accent);font-weight:800">${ic('seal','fill')} Completada</span><span class="t">Tu relación con el dinero</span></div></div>
+      <div class="mini">${cover(3, '', 70)}<div class="body"><span class="price" style="align-self:flex-start">${ic('lock')} $30.000</span><span class="t">¿Cuánto cuesta mi vida?</span></div></div>
+    </div>`;
+  const mentor = `<div class="row card" style="padding:12px"><span class="avatar">V<span class="on"></span></span><div class="grow"><div class="h2" style="font-size:14px">Victor te respondió</div><div class="small">“Ten a mano tus movimientos del último mes…”</div></div>${ic('caret')}</div>`;
+  if (C) return `${status.replace('class="status"', 'class="status status-navy"')}<div class="scroll"><div class="hero">${greet}${chips}</div>${cont}${route}</div>${tabbar('Inicio')}`;
+  return `${status}<div class="scroll">${greet}${chips}${cont}${p === 'pb' ? mentor : route}</div>${tabbar('Inicio')}`;
+}
+
+function routeScreen(p) {
+  const C = p === 'pc';
+  const head = `<div><div class="eyebrow-s">Tu ruta</div><h1 class="h1 ${C ? 'serif' : ''}">Independencia financiera</h1></div>
+    <div class="row">${ring(25, p === 'pc' ? '#1BC47D' : 'var(--s-accent)', C ? 'rgba(255,255,255,.14)' : 'var(--s-track)')}<div class="grow"><div class="h2" style="font-size:14px">1 de 6 estaciones</div><div class="small">6 misiones · 3 entregables</div></div></div>`;
+  const list = `<div class="track">
+    <div class="station"><span class="node done">${ic('check','fill')}</span><div class="grow"><div class="eyebrow-s">Estación 1 · Descubrir</div><div class="h2">Tu relación con el dinero</div><div class="small" style="color:var(--s-accent);font-weight:700">Completada · Mapa Personal</div></div></div>
+    <div class="station"><span class="node cur">${ic('plant')}</span><div class="grow card" style="padding:12px;gap:6px"><div class="eyebrow-s">Estación 2 · Entender · En curso</div><div class="h2">Entender el dinero</div>
+      <div class="lesson" style="padding:6px 0"><span class="num done" style="width:22px;height:22px;font-size:10px">${ic('check','fill')}</span><span class="grow small" style="color:var(--s-ink);font-weight:600">Las ocho ideas del dinero</span><span class="small">8 min</span></div>
+      <div class="lesson" style="padding:6px 0"><span class="num cur" style="width:22px;height:22px;font-size:10px">2</span><span class="grow small" style="color:var(--s-ink);font-weight:600">Dibuja tu Mapa del Dinero</span><span class="small">12 min</span></div></div></div>
+    <div class="station"><span class="node">${ic('lock')}</span><div class="grow"><div class="eyebrow-s">Estación 3 · Conocer</div><div class="h2">¿Cuánto cuesta mi vida?</div><div style="margin-top:6px"><span class="price">${ic('lock')} Desbloquear · $30.000</span></div></div></div>
+    <div class="station" style="opacity:.55"><span class="node">${ic('map')}</span><div class="grow"><div class="eyebrow-s">Estación 4 · Organizar</div><div class="h2">Ordenar tu dinero</div><div class="small">Próximamente</div></div></div>
+  </div>`;
+  if (C) return `${status.replace('class="status"', 'class="status status-navy"')}<div class="scroll"><div class="hero">${head}</div>${list}</div>${tabbar('Ruta')}`;
+  return `${status}<div class="scroll">${head}${list}</div>${tabbar('Ruta')}`;
+}
+
+function stationScreen(p) {
+  const C = p === 'pc';
+  const top = `${cover(2, 'Estación 2 · Entender', 120)}
+    <div><h1 class="h1 ${C ? 'serif' : ''}">Entender el dinero</h1><p class="p" style="margin-top:6px">El dinero puede medirse, conocerse y dirigirse.</p></div>
+    <div class="row" style="gap:6px;flex-wrap:wrap"><span class="chip">${ic('play')}2 misiones</span><span class="chip">${ic('clock')}1 semana</span><span class="chip">${ic('group')}Grupo privado</span></div>
+    <div class="row"><div class="grow bar"><b style="width:50%"></b></div><span class="small" style="font-weight:700">50 / 280 XP</span></div>`;
+  const tabs = `<div class="segment"><span class="on">Misiones</span><span>Entregable</span><span>Comunidad</span></div>`;
+  const lessons = `<div>
+    <div class="lesson"><span class="num done">${ic('check','fill')}</span><div class="grow"><div class="h2" style="font-size:14px">Las ocho ideas del dinero</div><div class="small">Completada · +50 XP</div></div></div>
+    <div class="lesson"><span class="num cur">2</span><div class="grow"><div class="h2" style="font-size:14px">Dibuja tu Mapa del Dinero</div><div class="small">12 min · +80 XP</div></div><span class="round" style="width:34px;height:34px;font-size:15px">${ic('play','fill')}</span></div>
+    <div class="lesson"><span class="num">${ic('group')}</span><div class="grow"><div class="h2" style="font-size:14px">Únete a tu grupo</div><div class="small">Opcional · +20 XP</div></div>${ic('caret')}</div>
+  </div>`;
+  const reward = `<div class="card ${C ? 'cert' : ''}" style="flex-direction:row;align-items:center;padding:12px"><span style="font-size:26px;color:${C ? '#B98A2E' : 'var(--s-accent)'}">${ic('scroll')}</span><div class="grow"><div class="eyebrow-s">Entregable al terminar</div><div class="h2" style="font-size:14px">Mapa del Dinero + 150 XP</div></div></div>`;
+  return `${status}<div class="scroll">${top}${tabs}${lessons}${reward}</div>${tabbar('Ruta')}`;
+}
+
+function mentorScreen(p) {
+  const head = `<div class="row" style="padding:2px 0 10px;border-bottom:1px solid var(--s-line)"><span style="font-size:20px;color:var(--s-muted)">${ic('back')}</span><span class="avatar">V<span class="on"></span></span><div class="grow"><div class="h2" style="font-size:15px">Victor</div><div class="small">Tu mentor · responde en el día</div></div></div>`;
+  const msgs = `<div style="display:flex;flex-direction:column;gap:10px">
+    <div class="bubble them">Hola, Diana. Antes de hablar de números, quiero entender tu historia. ¿Qué pasa con tu dinero a fin de mes?</div>
+    <div class="bubble me">Siento que se me va sin darme cuenta. Me da ansiedad revisar la cuenta.</div>
+    <div class="bubble me" style="display:flex;align-items:center;gap:10px">${ic('play','fill')}<span style="display:flex;gap:2px;align-items:center">${[6,11,16,9,18,13,8,15,19,11,7,14].map(h => `<i style="display:block;width:2px;height:${h}px;border-radius:1px;background:currentColor;opacity:.7"></i>`).join('')}</span><span style="font-size:11px">0:42</span></div>
+    <div class="bubble them">Gracias por contarlo con tanta honestidad. ¿Qué aprendiste en casa sobre el dinero?</div>
+    <div class="small" style="align-self:center">Victor está escribiendo…</div>
+  </div>`;
+  return `${status}<div class="scroll">${head}${msgs}</div><div class="composer"><span class="in">Escribe a Victor…</span><span class="round" style="background:transparent;border:1px solid var(--s-line);color:var(--s-ink)">${ic('mic')}</span></div>`;
+}
+
+const PROPS = [
+  { id: 'a', cls: 'pa', tag: 'Propuesta A', name: 'Ruta nocturna',
+    desc: 'La más cercana a Platzi: modo oscuro azul noche, verde brillante para el progreso y portadas de color por estación, como cursos de una escuela. Se siente app de aprendizaje moderna y enfocada.',
+    sw: [['#0B1424','Fondo'],['#121F36','Tarjetas'],['#2FE07D','Progreso'],['#FFB648','Precio'],['#EAF0FA','Texto']] },
+  { id: 'b', cls: 'pb', tag: 'Propuesta B', name: 'Aula clara',
+    desc: 'Versión de día: fondo claro, tipografía azul marino y verde solo para el avance. Más tranquila y legible para sesiones largas; el mentor aparece en el inicio en vez de la ruta.',
+    sw: [['#F4F6FA','Fondo'],['#FFFFFF','Tarjetas'],['#10203B','Texto'],['#12A664','Progreso'],['#B36B00','Precio']] },
+  { id: 'c', cls: 'pc', tag: 'Propuesta C', name: 'Escuela',
+    desc: 'Cabeceras azul marino que abrazan el contenido sobre fondo blanco, títulos con serif y entregables tratados como certificados dorados. Mezcla la energía de Platzi con un tono más premium.',
+    sw: [['#0E1A30','Cabecera'],['#FFFFFF','Fondo'],['#1BC47D','Progreso'],['#E7B85A','Certificado'],['#64708A','Texto suave']] },
+];
+const SCREENS = [['Inicio', home], ['Ruta', routeScreen], ['Estación', stationScreen], ['Mentor', mentorScreen]];
+document.getElementById('props').outerHTML = PROPS.map(pr => `
+  <section class="prop" id="${pr.id}" aria-labelledby="h-${pr.id}">
+    <div class="prop-head"><div><span class="tag">${pr.tag}</span><h2 id="h-${pr.id}">${pr.name}</h2><p>${pr.desc}</p></div>
+      <div class="swatches">${pr.sw.map(([c, l]) => `<span class="sw"><i style="background:${c}"></i>${l} ${c}</span>`).join('')}</div></div>
+    <div class="rail" tabindex="0" aria-label="Pantallas de ${pr.name}"><div class="phones">${SCREENS.map(([label, fn]) => `
+      <div class="phone-wrap"><div class="phone ${pr.cls}"><div class="screen ${pr.cls === 'pc' && label !== 'Estación' && label !== 'Mentor' ? 'dark-top' : ''}"><span class="notch"></span>${fn(pr.cls)}</div></div><span class="cap">${label}</span></div>`).join('')}
+    </div></div>
+  </section>`).join('');
+</script>

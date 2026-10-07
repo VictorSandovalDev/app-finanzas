@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AudioMessage } from '@/components/AudioMessage';
 import { Icon } from '@/components/Icon';
 import { useBreath } from '@/components/motion';
-import { BackButton, Button, T, useGutter } from '@/components/ui';
+import { BackButton, Button, MentorAvatar, T, useGutter } from '@/components/ui';
 import { MessageRow } from '@/services/supabase';
 import { useAuth } from '@/state/auth';
 import { useConversation } from '@/state/conversation';
@@ -93,12 +93,10 @@ export default function Relato() {
           <View style={[column, { gap: 12, paddingBottom: 14 }]}>
             <BackButton onPress={() => (router.canGoBack() ? router.back() : router.replace('/nivel/1'))} label="Estación 1" />
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={styles.monogram}>
-                <Text style={styles.monogramText}>V</Text>
-              </View>
+              <MentorAvatar />
               <View style={{ flex: 1 }}>
                 <T variant="bodyStrong">Victor</T>
-                <T variant="small">Tu mentor · ¿Por qué estás aquí?</T>
+                <T variant="small">Tu mentor · responde en el día</T>
               </View>
             </View>
           </View>
@@ -108,7 +106,7 @@ export default function Relato() {
           <View style={[styles.bubble, styles.theirs]}>
             <Text style={styles.bubbleText}>{greeting}</Text>
           </View>
-          {loading ? <ActivityIndicator color={colors.forest} /> : messages.map((m) => <Bubble key={m.id} message={m} />)}
+          {loading ? <ActivityIndicator color={colors.accent} /> : messages.map((m) => <Bubble key={m.id} message={m} />)}
 
           {lastIsMine && !map && (
             <T variant="small" style={{ alignSelf: 'center', textAlign: 'center', paddingHorizontal: 24 }}>
@@ -118,7 +116,7 @@ export default function Relato() {
 
           {map ? (
             <View style={styles.ready}>
-              <T variant="label" style={{ color: colors.brassSoft }}>Victor preparó tu entregable</T>
+              <T variant="label" style={{ color: colors.warmSoft }}>Victor preparó tu entregable</T>
               <T variant="title" style={{ color: colors.onDark, fontSize: 22, lineHeight: 28 }}>Tu Mapa Personal de Transformación</T>
               <Button label="Ver mi mapa" variant="light" icon="arrowRight" onPress={() => router.push('/mision/mapa-personal')} />
             </View>
@@ -136,14 +134,14 @@ export default function Relato() {
                 ))}
               </ScrollView>
             )}
-            {error && <T variant="small" style={{ color: colors.umber }}>{error}</T>}
+            {error && <T variant="small" style={{ color: colors.danger }}>{error}</T>}
             {recording ? (
               <View style={styles.inputRow}>
                 <View style={styles.recording}>
                   <RecordingDot />
                   <Text style={styles.recText}>Grabando · {Math.floor(recorderState.durationMillis / 1000)} s</Text>
                 </View>
-                <RoundButton icon="stop" label="Detener y enviar" onPress={toggleRecording} tone="umber" />
+                <RoundButton icon="stop" label="Detener y enviar" onPress={toggleRecording} tone="warn" />
               </View>
             ) : (
               <View style={styles.inputRow}>
@@ -158,7 +156,7 @@ export default function Relato() {
                 />
                 {sending ? (
                   <View style={styles.round}>
-                    <ActivityIndicator color={colors.forest} />
+                    <ActivityIndicator color={colors.accent} />
                   </View>
                 ) : draft.trim() ? (
                   <RoundButton icon="send" label="Enviar" onPress={() => submit(draft)} />
@@ -189,12 +187,12 @@ function Bubble({ message }: { message: MessageRow }) {
 
 function RecordingDot() {
   const v = useBreath(1000);
-  return <Animated.View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.umber, opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }) }} />;
+  return <Animated.View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.danger, opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }) }} />;
 }
 
-function RoundButton({ icon, label, onPress, tone = 'forest' }: { icon: 'send' | 'mic' | 'stop'; label: string; onPress: () => void; tone?: 'forest' | 'quiet' | 'umber' }) {
-  const bg = tone === 'forest' ? colors.forest : tone === 'umber' ? colors.umber : colors.surface;
-  const fg = tone === 'quiet' ? colors.forest : colors.onDark;
+function RoundButton({ icon, label, onPress, tone = 'accent' }: { icon: 'send' | 'mic' | 'stop'; label: string; onPress: () => void; tone?: 'accent' | 'quiet' | 'warn' }) {
+  const bg = tone === 'accent' ? colors.accent : tone === 'warn' ? colors.danger : colors.surface;
+  const fg = tone === 'quiet' ? colors.accent : colors.onDark;
   return (
     <Pressable onPress={onPress} accessibilityLabel={label} style={({ pressed }) => [styles.round, { backgroundColor: bg }, tone === 'quiet' && styles.roundQuiet, pressed && { opacity: 0.7 }]}>
       <Icon name={icon} size={20} color={fg} weight={tone === 'quiet' ? 'regular' : 'fill'} />
@@ -204,13 +202,11 @@ function RoundButton({ icon, label, onPress, tone = 'forest' }: { icon: 'send' |
 
 const styles = StyleSheet.create({
   header: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
-  monogram: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.forest, alignItems: 'center', justifyContent: 'center' },
-  monogramText: { fontFamily: fonts.display, fontSize: 21, lineHeight: 24, color: colors.onDark },
   bubble: { maxWidth: '86%', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18 },
   theirs: { alignSelf: 'flex-start', backgroundColor: colors.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, borderBottomLeftRadius: 6 },
-  mine: { alignSelf: 'flex-end', backgroundColor: colors.forest, borderBottomRightRadius: 6 },
+  mine: { alignSelf: 'flex-end', backgroundColor: colors.accent, borderBottomRightRadius: 6 },
   bubbleText: { fontFamily: fonts.sans, fontSize: 15, lineHeight: 22, color: colors.ink },
-  ready: { backgroundColor: colors.forest, borderRadius: 16, padding: 20, gap: 12, marginTop: 6 },
+  ready: { backgroundColor: colors.accent, borderRadius: 16, padding: 20, gap: 12, marginTop: 6 },
   composer: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line, backgroundColor: colors.bg },
   suggestion: { borderWidth: 1, borderColor: colors.line, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 14, backgroundColor: colors.surface },
   suggestionText: { fontFamily: fonts.sansMedium, fontSize: 13, color: colors.ink },
@@ -232,8 +228,8 @@ const styles = StyleSheet.create({
     color: colors.ink,
     outlineStyle: 'none',
   } as object,
-  recording: { flex: 1, minHeight: 46, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, borderRadius: 23, backgroundColor: colors.umberSoft },
-  recText: { fontFamily: fonts.sansMedium, fontSize: 14, color: colors.umber },
+  recording: { flex: 1, minHeight: 46, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, borderRadius: 23, backgroundColor: '#FDECEA' },
+  recText: { fontFamily: fonts.sansMedium, fontSize: 14, color: colors.danger },
   round: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
   roundQuiet: { borderWidth: 1, borderColor: colors.line },
 });

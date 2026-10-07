@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useWindowDimensions } from 'react-native';
 
 import { TabBar } from '@/components/TabBar';
-import { useAuth } from '@/state/auth';
+import { UI_PREVIEW, useAuth } from '@/state/auth';
 import { useTransformation } from '@/state/conversation';
 import { useJourney } from '@/state/journey';
 import { colors } from '@/theme/tokens';
@@ -12,7 +12,7 @@ export default function MainLayout() {
   const vertical = useWindowDimensions().width >= 1024;
   const { session } = useAuth();
   useMentorDeliverables(session?.user.id);
-  if (!session) return <Redirect href="/bienvenida" />;
+  if (!session && !UI_PREVIEW) return <Redirect href="/bienvenida" />;
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} vertical={vertical} />}

@@ -21,12 +21,12 @@ export function Celebration({ icon, children }: { icon: IconName; children: Reac
     <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: 24 }]}>
       <View style={{ width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
         <Svg width={SIZE} height={SIZE} style={StyleSheet.absoluteFill}>
-          <Circle cx={SIZE / 2} cy={SIZE / 2} r={R} stroke="rgba(244,241,233,0.12)" strokeWidth={1} fill="none" />
+          <Circle cx={SIZE / 2} cy={SIZE / 2} r={R} stroke="rgba(255,255,255,0.12)" strokeWidth={1} fill="none" />
           <Circle
             cx={SIZE / 2}
             cy={SIZE / 2}
             r={R}
-            stroke={colors.brass}
+            stroke={colors.accentBright}
             strokeWidth={2}
             fill="none"
             strokeLinecap="round"
@@ -47,6 +47,6 @@ export function Celebration({ icon, children }: { icon: IconName; children: Reac
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.forestDeep, alignItems: 'center', justifyContent: 'center', gap: 36, paddingHorizontal: 24 },
+  root: { flex: 1, backgroundColor: colors.navy, alignItems: 'center', justifyContent: 'center', gap: 36, paddingHorizontal: 24 },
   content: { width: '100%', maxWidth: 420, alignItems: 'center', gap: 14 },
 });

@@ -14,6 +14,8 @@ export type Mission = {
   description: string;
   done: boolean;
   xp: number;
+  /** Approximate time it takes. */
+  minutes: number;
   icon: IconName;
   /** Optional missions do not block completing the level. */
   optional?: boolean;
@@ -30,6 +32,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Cuéntale a Victor qué pasa con tu dinero y qué te gustaría cambiar.',
           done: !!state.level1.map,
           xp: 50,
+          minutes: 15,
           icon: 'chat',
           href: state.level1.map ? '/mision/mapa-personal' : '/mision/relato',
         },
@@ -39,6 +42,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Tres cartas para reencuadrar, fortalecerte y pasar a la acción.',
           done: !!state.level1.mantrasSaved,
           xp: 80,
+          minutes: 5,
           icon: 'quotes',
           href: state.level1.map ? '/mision/frases' : '/mision/relato',
         },
@@ -48,6 +52,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Acompañamiento durante la semana en el grupo privado.',
           done: !!state.level1.joinedGroup,
           xp: 20,
+          minutes: 2,
           icon: 'group',
           optional: true,
           href: '/nivel/1',
@@ -61,6 +66,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Conceptos simples para quitarle lo misterioso a las finanzas.',
           done: state.level2.understood.length >= MONEY_IDEAS.length,
           xp: 50,
+          minutes: 8,
           icon: 'plant',
           href: '/mision/ideas-del-dinero',
         },
@@ -70,6 +76,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Mira cómo entra, se reparte y sale tu dinero cada mes.',
           done: !!state.level2.moneyMap,
           xp: 80,
+          minutes: 12,
           icon: 'map',
           href: '/mision/mapa-del-dinero',
         },
@@ -82,6 +89,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Ubica en qué punto del camino a la independencia estás hoy.',
           done: state.level3.stage !== undefined,
           xp: 50,
+          minutes: 6,
           icon: 'door',
           href: '/mision/recorrido',
         },
@@ -91,6 +99,7 @@ export function getMissions(state: JourneyState, levelId: LevelId): Mission[] {
           description: 'Necesidades esenciales, personales y construcción de futuro.',
           done: !!state.level3.done,
           xp: 80,
+          minutes: 15,
           icon: 'house',
           href: state.level3.done ? '/mision/numero' : '/mision/costo-de-vida',
         },

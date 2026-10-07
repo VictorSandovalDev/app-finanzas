@@ -3,6 +3,12 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 
 import { Profile, supabase } from '@/services/supabase';
 
+/**
+ * Local design review only: browse the member screens without signing in.
+ * Requires the dev server (`__DEV__`) and EXPO_PUBLIC_UI_PREVIEW=1; never active in builds.
+ */
+export const UI_PREVIEW = __DEV__ && process.env.EXPO_PUBLIC_UI_PREVIEW === '1';
+
 type AuthContextValue = {
   session: Session | null;
   profile: Profile | null;

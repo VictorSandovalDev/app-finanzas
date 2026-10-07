@@ -1,43 +1,49 @@
 import { Platform } from 'react-native';
 
 /**
- * Editorial direction: ivory paper, deep forest ink, brass used sparingly.
- * Newsreader (serif) for headings, Hanken Grotesk for interface text.
+ * "Aula clara" (proposal B): light, airy surfaces, navy ink, green for progress.
+ * Manrope for everything; weight carries the hierarchy.
  */
 export const colors = {
-  bg: '#F4F1E9',
-  surface: '#FBFAF6',
-  sunken: '#ECE7DB',
-  line: '#DCD5C5',
-  lineSoft: '#E8E2D5',
-  ink: '#1C2420',
-  inkSoft: '#4A524C',
-  muted: '#6E7067',
-  forest: '#1F4A39',
-  forestDeep: '#143024',
-  forestSoft: '#DCE5DD',
-  moss: '#5F7D68',
-  brass: '#A8864F',
-  brassSoft: '#EFE6D3',
-  umber: '#9C4F2E',
-  umberSoft: '#F3E3DA',
-  onDark: '#F4F1E9',
-  onDarkMuted: 'rgba(244,241,233,0.72)',
+  bg: '#F4F6FA',
+  surface: '#FFFFFF',
+  sunken: '#EBEFF5',
+  line: '#E3E8F0',
+  lineSoft: '#EDF1F6',
+  ink: '#10203B',
+  inkSoft: '#33415C',
+  muted: '#5F6E87',
+  label: '#5F6E87',
+  /** Buttons and green text (AA on white). */
+  accent: '#0B8550',
+  /** Progress fills and success marks. */
+  accentBright: '#12A664',
+  accentSoft: '#E2F6EC',
+  /** Dark surfaces: celebrations, onboarding, monograms. */
+  navy: '#10203B',
+  warm: '#F39C12',
+  warmSoft: '#FFF1DD',
+  /** Prices, locks and errors (AA on warmSoft). */
+  warn: '#A35F00',
+  warnSoft: '#FFF1DD',
+  danger: '#C2362F',
+  onDark: '#FFFFFF',
+  onDarkMuted: 'rgba(255,255,255,0.72)',
   white: '#FFFFFF',
 } as const;
 
 export const fonts = {
-  display: 'Newsreader_400Regular',
-  displayItalic: 'Newsreader_400Regular_Italic',
-  displayMedium: 'Newsreader_500Medium',
-  sans: 'HankenGrotesk_400Regular',
-  sansMedium: 'HankenGrotesk_500Medium',
-  sansSemi: 'HankenGrotesk_600SemiBold',
+  display: 'Manrope_800ExtraBold',
+  displayItalic: 'Manrope_600SemiBold',
+  displayMedium: 'Manrope_700Bold',
+  sans: 'Manrope_500Medium',
+  sansMedium: 'Manrope_600SemiBold',
+  sansSemi: 'Manrope_700Bold',
 } as const;
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 } as const;
 
-export const radius = { sm: 8, md: 12, lg: 16, pill: 999 } as const;
+export const radius = { sm: 8, md: 12, lg: 14, pill: 999 } as const;
 
 export const maxContentWidth = 720;
 

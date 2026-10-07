@@ -25,7 +25,7 @@ export default function Onboarding() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, flexDirection: wide ? 'row' : 'column' }}>
       {(wide || step === 'intro') && (
-        <View style={wide ? { flex: 1 } : { paddingTop: insets.top, backgroundColor: colors.forestDeep }}>
+        <View style={wide ? { flex: 1 } : { paddingTop: insets.top, backgroundColor: colors.navy }}>
           <RouteIllustration height={wide ? 800 : 280} />
         </View>
       )}
@@ -49,7 +49,7 @@ export default function Onboarding() {
             </View>
             <View style={styles.stages}>
               {LEVELS.map((l, i) => (
-                <T key={l.id} style={[styles.stage, i === 0 && { color: colors.forest }]}>
+                <T key={l.id} style={[styles.stage, i === 0 && { color: colors.accent }]}>
                   {l.stage}
                   {i < LEVELS.length - 1 ? <T style={styles.sep}>  ·  </T> : null}
                 </T>

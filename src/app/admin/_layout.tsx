@@ -15,7 +15,7 @@ export default function AdminLayout() {
   if (loading || (session && !profile)) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.forest} />
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -61,5 +61,5 @@ function AdminSignIn() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
-  brand: { fontFamily: fonts.sansSemi, fontSize: 11, letterSpacing: 1.3, textTransform: 'uppercase', color: colors.moss },
+  brand: { fontFamily: fonts.sansSemi, fontSize: 11, letterSpacing: 1.3, textTransform: 'uppercase', color: colors.label },
 });

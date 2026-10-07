@@ -36,7 +36,7 @@ export default function Mantras() {
         {mantras.map((m, i) => (
           <FadeUp key={m.role} delay={i * 140} style={wide ? { flex: 1 } : undefined}>
             <Surface style={{ gap: 14, flex: wide ? 1 : undefined }}>
-              <Icon name="quotes" size={22} color={colors.brass} weight="fill" />
+              <Icon name="quotes" size={22} color={colors.warm} weight="fill" />
               <T variant="quote">{m.text}</T>
               <View style={{ gap: 2 }}>
                 <T variant="label">{ROLES[m.role].title}</T>

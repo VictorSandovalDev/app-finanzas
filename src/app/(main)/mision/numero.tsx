@@ -24,8 +24,8 @@ export default function IndependenceNumber() {
     <Screen>
       <BackButton />
       <FadeUp>
-        <Surface tone="forest" style={{ gap: 10 }}>
-          <T variant="label" style={{ color: colors.brassSoft }}>Mi Número de Independencia</T>
+        <Surface tone="dark" style={{ gap: 10 }}>
+          <T variant="label" style={{ color: colors.warmSoft }}>Mi Número de Independencia</T>
           <T style={{ color: colors.onDarkMuted }}>Para sostener tu vida cada mes necesitas</T>
           <Text style={styles.number} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
             {formatCOP(total)}
@@ -53,9 +53,9 @@ export default function IndependenceNumber() {
           {INDEPENDENCE_STAGES.map((s, i) => (
             <View key={s.title} style={styles.step}>
               <View style={styles.track}>
-                <View style={[styles.segment, i === 0 && { opacity: 0 }, { backgroundColor: i <= here ? colors.forest : colors.line }]} />
+                <View style={[styles.segment, i === 0 && { opacity: 0 }, { backgroundColor: i <= here ? colors.accent : colors.line }]} />
                 <View style={[styles.dot, i < here && styles.dotPast, i === here && styles.dotHere]} />
-                <View style={[styles.segment, i === INDEPENDENCE_STAGES.length - 1 && { opacity: 0 }, { backgroundColor: i < here ? colors.forest : colors.line }]} />
+                <View style={[styles.segment, i === INDEPENDENCE_STAGES.length - 1 && { opacity: 0 }, { backgroundColor: i < here ? colors.accent : colors.line }]} />
               </View>
               <Text style={[styles.stepText, i === here && { color: colors.ink, fontFamily: fonts.sansSemi }]}>{s.title}</Text>
             </View>
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   track: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
   segment: { flex: 1, height: 1 },
   dot: { width: 12, height: 12, borderRadius: 6, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.bg },
-  dotPast: { backgroundColor: colors.forest, borderColor: colors.forest },
-  dotHere: { width: 16, height: 16, borderRadius: 8, backgroundColor: colors.brass, borderColor: colors.brass },
+  dotPast: { backgroundColor: colors.accent, borderColor: colors.accent },
+  dotHere: { width: 16, height: 16, borderRadius: 8, backgroundColor: colors.warm, borderColor: colors.warm },
   stepText: { fontFamily: fonts.sans, fontSize: 12, lineHeight: 16, color: colors.muted, textAlign: 'center', paddingHorizontal: 2 },
 });

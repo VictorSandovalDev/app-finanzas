@@ -9,9 +9,9 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>
 
 const TABS: { name: string; label: string; icon: IconName }[] = [
   { name: 'viaje', label: 'Inicio', icon: 'home' },
-  { name: 'mapa', label: 'Mapa', icon: 'map' },
+  { name: 'mapa', label: 'Ruta', icon: 'map' },
   { name: 'mentor', label: 'Mentor', icon: 'chat' },
-  { name: 'perfil', label: 'Pasaporte', icon: 'passport' },
+  { name: 'perfil', label: 'Perfil', icon: 'passport' },
 ];
 
 /** Detail sections live inside the tabs; this is the tab they belong to. */
@@ -61,7 +61,7 @@ export function TabBar({ state, navigation, insets, vertical }: TabBarProps & { 
                 accessibilityState={{ selected: focused }}
                 style={({ pressed }) => [styles.sideRow, focused && styles.sideActive, pressed && { opacity: 0.8 }]}
               >
-                <Icon name={tab.icon} size={22} color={focused ? colors.forest : colors.muted} weight={focused ? 'duotone' : 'light'} />
+                <Icon name={tab.icon} size={22} color={focused ? colors.ink : colors.muted} weight={focused ? 'fill' : 'regular'} />
                 <Text style={[styles.sideLabel, { color: focused ? colors.ink : colors.muted }]}>{tab.label}</Text>
               </Pressable>
             );
@@ -84,9 +84,8 @@ export function TabBar({ state, navigation, insets, vertical }: TabBarProps & { 
             accessibilityState={{ selected: focused }}
             style={styles.item}
           >
-            <View style={[styles.indicator, focused && { backgroundColor: colors.forest }]} />
-            <Icon name={tab.icon} size={24} color={focused ? colors.forest : colors.muted} weight={focused ? 'duotone' : 'light'} />
-            <Text style={[styles.label, { color: focused ? colors.forest : colors.muted }]}>{tab.label}</Text>
+            <Icon name={tab.icon} size={24} color={focused ? colors.ink : colors.muted} weight={focused ? 'fill' : 'regular'} />
+            <Text style={[styles.label, { color: focused ? colors.ink : colors.muted }]}>{tab.label}</Text>
           </Pressable>
         );
       })}
@@ -98,12 +97,11 @@ const styles = StyleSheet.create({
   bottom: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1,
     borderTopColor: colors.line,
   },
   item: { flex: 1, alignItems: 'center', gap: 3, paddingTop: 8, paddingBottom: 4 },
-  indicator: { position: 'absolute', top: 0, width: 28, height: 2, borderRadius: 1, backgroundColor: 'transparent' },
-  label: { fontFamily: fonts.sansMedium, fontSize: 11, letterSpacing: 0.2 },
+  label: { fontFamily: fonts.sansSemi, fontSize: 11 },
   side: {
     width: 248,
     paddingHorizontal: 16,
@@ -112,8 +110,8 @@ const styles = StyleSheet.create({
     borderRightWidth: StyleSheet.hairlineWidth,
     borderRightColor: colors.line,
   },
-  brand: { fontFamily: fonts.display, fontSize: 22, color: colors.ink, paddingHorizontal: 12 },
+  brand: { fontFamily: fonts.display, fontSize: 19, color: colors.ink, paddingHorizontal: 12 },
   sideRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, paddingHorizontal: 12, borderRadius: 10 },
-  sideActive: { backgroundColor: colors.forestSoft },
+  sideActive: { backgroundColor: colors.sunken },
   sideLabel: { fontFamily: fonts.sansMedium, fontSize: 15 },
 });

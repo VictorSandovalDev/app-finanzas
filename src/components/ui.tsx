@@ -81,6 +81,8 @@ type ButtonProps = {
   onPress?: () => void;
   variant?: 'primary' | 'secondary' | 'quiet' | 'quietLight' | 'light' | 'danger';
   icon?: IconName;
+  /** Icon before the label (e.g. play) instead of after it (e.g. arrow). */
+  leadingIcon?: IconName;
   loading?: boolean;
   disabled?: boolean;
   compact?: boolean;
@@ -88,15 +90,15 @@ type ButtonProps = {
 };
 
 const BUTTON = {
-  primary: { bg: colors.forest, fg: colors.onDark, border: colors.forest },
-  secondary: { bg: 'transparent', fg: colors.forest, border: colors.line },
+  primary: { bg: colors.accent, fg: colors.onDark, border: colors.accent },
+  secondary: { bg: 'transparent', fg: colors.accent, border: colors.line },
   quiet: { bg: 'transparent', fg: colors.inkSoft, border: 'transparent' },
   quietLight: { bg: 'transparent', fg: colors.onDarkMuted, border: 'transparent' },
-  light: { bg: colors.onDark, fg: colors.forestDeep, border: colors.onDark },
-  danger: { bg: colors.umber, fg: colors.onDark, border: colors.umber },
+  light: { bg: colors.onDark, fg: colors.navy, border: colors.onDark },
+  danger: { bg: colors.danger, fg: colors.onDark, border: colors.danger },
 };
 
-export function Button({ label, onPress, variant = 'primary', icon, loading, disabled, compact, style }: ButtonProps) {
+export function Button({ label, onPress, variant = 'primary', icon, leadingIcon, loading, disabled, compact, style }: ButtonProps) {
   const v = BUTTON[variant];
   return (
     <Pressable
@@ -115,6 +117,7 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
         <ActivityIndicator color={v.fg} />
       ) : (
         <>
+          {leadingIcon ? <Icon name={leadingIcon} size={compact ? 15 : 17} color={v.fg} weight="fill" /> : null}
           <Text style={[styles.buttonLabel, compact && { fontSize: 14 }, { color: v.fg }]} numberOfLines={1}>
             {label}
           </Text>
@@ -126,8 +129,8 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
 }
 
 /** A quiet surface. Use only to set one block apart, not for every section. */
-export function Surface({ children, style, onPress, tone = 'surface' }: { children: ReactNode; style?: StyleProp<ViewStyle>; onPress?: () => void; tone?: 'surface' | 'forest' | 'brass' | 'sunken' }) {
-  const bg = { surface: colors.surface, forest: colors.forest, brass: colors.brassSoft, sunken: colors.sunken }[tone];
+export function Surface({ children, style, onPress, tone = 'surface' }: { children: ReactNode; style?: StyleProp<ViewStyle>; onPress?: () => void; tone?: 'surface' | 'dark' | 'warm' | 'sunken' }) {
+  const bg = { surface: colors.surface, dark: colors.navy, warm: colors.warmSoft, sunken: colors.sunken }[tone];
   const base = [styles.surface, { backgroundColor: bg }, tone === 'surface' && styles.surfaceBorder, style];
   if (!onPress) return <View style={base}>{children}</View>;
   return (
@@ -142,7 +145,7 @@ export function Divider({ style }: { style?: StyleProp<ViewStyle> }) {
 }
 
 /** Thin progress line. */
-export function Progress({ value, color = colors.forest, track = colors.lineSoft, height = 4 }: { value: number; color?: string; track?: string; height?: number }) {
+export function Progress({ value, color = colors.accentBright, track = colors.line, height = 6 }: { value: number; color?: string; track?: string; height?: number }) {
   return (
     <View style={{ height, borderRadius: height, backgroundColor: track, overflow: 'hidden' }}>
       <View style={{ width: `${Math.max(0, Math.min(100, value))}%`, height: '100%', borderRadius: height, backgroundColor: color }} />
@@ -150,13 +153,13 @@ export function Progress({ value, color = colors.forest, track = colors.lineSoft
   );
 }
 
-export function Tag({ label, tone = 'neutral', icon }: { label: string; tone?: 'neutral' | 'forest' | 'brass' | 'umber' | 'onDark'; icon?: IconName }) {
+export function Tag({ label, tone = 'neutral', icon }: { label: string; tone?: 'neutral' | 'accent' | 'warm' | 'warn' | 'onDark'; icon?: IconName }) {
   const map = {
     neutral: { bg: colors.sunken, fg: colors.inkSoft },
-    forest: { bg: colors.forestSoft, fg: colors.forest },
-    brass: { bg: colors.brassSoft, fg: '#7A6035' },
-    umber: { bg: colors.umberSoft, fg: colors.umber },
-    onDark: { bg: 'rgba(244,241,233,0.12)', fg: colors.onDark },
+    accent: { bg: colors.accentSoft, fg: colors.accent },
+    warm: { bg: colors.warmSoft, fg: colors.warn },
+    warn: { bg: colors.warnSoft, fg: colors.warn },
+    onDark: { bg: 'rgba(255,255,255,0.14)', fg: colors.onDark },
   }[tone];
   return (
     <View style={[styles.tag, { backgroundColor: map.bg }]}>
@@ -169,11 +172,11 @@ export function Tag({ label, tone = 'neutral', icon }: { label: string; tone?: '
 /** Round emblem with a hairline ring. */
 export function Emblem({ icon, size = 44, tone = 'default' }: { icon: IconName; size?: number; tone?: 'default' | 'active' | 'done' | 'locked' | 'onDark' }) {
   const map = {
-    default: { bg: colors.surface, border: colors.line, fg: colors.forest, weight: 'light' as const },
-    active: { bg: colors.forest, border: colors.forest, fg: colors.onDark, weight: 'light' as const },
-    done: { bg: colors.forestSoft, border: colors.forestSoft, fg: colors.forest, weight: 'regular' as const },
+    default: { bg: colors.surface, border: colors.line, fg: colors.accent, weight: 'light' as const },
+    active: { bg: colors.surface, border: colors.accentBright, fg: colors.accent, weight: 'regular' as const },
+    done: { bg: colors.accentBright, border: colors.accentBright, fg: colors.onDark, weight: 'bold' as const },
     locked: { bg: colors.bg, border: colors.line, fg: colors.muted, weight: 'light' as const },
-    onDark: { bg: 'rgba(244,241,233,0.08)', border: 'rgba(244,241,233,0.24)', fg: colors.onDark, weight: 'light' as const },
+    onDark: { bg: 'rgba(255,255,255,0.08)', border: 'rgba(255,255,255,0.24)', fg: colors.onDark, weight: 'light' as const },
   }[tone];
   return (
     <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 1, borderColor: map.border, backgroundColor: map.bg, alignItems: 'center', justifyContent: 'center' }}>
@@ -196,26 +199,34 @@ export function BackButton({ onPress, kind = 'back', label }: { onPress?: () => 
   );
 }
 
-/** Victor's note: a serif monogram and his words, set like a quoted aside. */
+/** Victor's note: his avatar and his words, in a card. */
 export function MentorNote({ children, action, onPress }: { children: ReactNode; action?: string; onPress?: () => void }) {
   const body = (
     <View style={styles.note}>
-      <View style={styles.monogram}>
-        <Text style={styles.monogramText}>V</Text>
-      </View>
-      <View style={{ flex: 1, gap: 6 }}>
-        <T variant="label">Victor · tu mentor</T>
+      <MentorAvatar />
+      <View style={{ flex: 1, gap: 4 }}>
+        <Text style={styles.noteName}>Victor · tu mentor</Text>
         {typeof children === 'string' ? <T style={{ color: colors.ink }}>{children}</T> : children}
         {action ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 2 }}>
             <Text style={styles.noteAction}>{action}</Text>
-            <Icon name="arrowRight" size={14} color={colors.forest} weight="regular" />
+            <Icon name="arrowRight" size={14} color={colors.accent} weight="bold" />
           </View>
         ) : null}
       </View>
     </View>
   );
-  return onPress ? <Pressable onPress={onPress}>{body}</Pressable> : body;
+  return onPress ? <Pressable onPress={onPress} style={({ pressed }) => pressed && { opacity: 0.85 }}>{body}</Pressable> : body;
+}
+
+/** Victor's round avatar with an online dot. */
+export function MentorAvatar({ size = 40 }: { size?: number }) {
+  return (
+    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: colors.accentBright, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontFamily: fonts.display, fontSize: size * 0.42, color: colors.onDark }}>V</Text>
+      <View style={[styles.online, { width: size * 0.28, height: size * 0.28, borderRadius: size * 0.14 }]} />
+    </View>
+  );
 }
 
 /** Section heading with an optional trailing action. */
@@ -250,21 +261,21 @@ export function Column({ children, gap = space.xl }: { children: ReactNode; gap?
 }
 
 export const text = StyleSheet.create({
-  display: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, color: colors.ink, letterSpacing: -0.4 },
-  title: { fontFamily: fonts.display, fontSize: 26, lineHeight: 32, color: colors.ink, letterSpacing: -0.2 },
-  heading: { fontFamily: fonts.sansSemi, fontSize: 17, lineHeight: 23, color: colors.ink },
-  body: { fontFamily: fonts.sans, fontSize: 15, lineHeight: 23, color: colors.inkSoft },
-  bodyStrong: { fontFamily: fonts.sansSemi, fontSize: 15, lineHeight: 22, color: colors.ink },
-  small: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 19, color: colors.muted },
-  label: { fontFamily: fonts.sansSemi, fontSize: 11, lineHeight: 14, letterSpacing: 1.3, textTransform: 'uppercase', color: colors.moss },
-  quote: { fontFamily: fonts.displayItalic, fontSize: 22, lineHeight: 30, color: colors.ink },
+  display: { fontFamily: fonts.display, fontSize: 28, lineHeight: 34, color: colors.ink, letterSpacing: -0.5 },
+  title: { fontFamily: fonts.display, fontSize: 22, lineHeight: 28, color: colors.ink, letterSpacing: -0.3 },
+  heading: { fontFamily: fonts.sansSemi, fontSize: 16, lineHeight: 22, color: colors.ink },
+  body: { fontFamily: fonts.sans, fontSize: 15, lineHeight: 22, color: colors.muted },
+  bodyStrong: { fontFamily: fonts.sansSemi, fontSize: 15, lineHeight: 21, color: colors.ink },
+  small: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 18, color: colors.muted },
+  label: { fontFamily: fonts.sansSemi, fontSize: 11, lineHeight: 14, letterSpacing: 1, textTransform: 'uppercase', color: colors.label },
+  quote: { fontFamily: fonts.displayMedium, fontSize: 19, lineHeight: 27, color: colors.ink },
 });
 
 const styles = StyleSheet.create({
   footer: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line, paddingTop: 12, paddingBottom: 12 },
   button: {
-    minHeight: 52,
-    borderRadius: radius.md,
+    minHeight: 50,
+    borderRadius: radius.pill,
     borderWidth: 1,
     paddingHorizontal: 20,
     flexDirection: 'row',
@@ -272,17 +283,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
   },
-  buttonCompact: { minHeight: 40, paddingHorizontal: 14, borderRadius: 10 },
-  buttonLabel: { fontFamily: fonts.sansSemi, fontSize: 15, letterSpacing: 0.1 },
-  surface: { borderRadius: radius.lg, padding: space.xl },
-  surfaceBorder: { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line },
-  tag: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
+  buttonCompact: { minHeight: 38, paddingHorizontal: 14, borderRadius: radius.pill },
+  buttonLabel: { fontFamily: fonts.display, fontSize: 15, letterSpacing: 0.1 },
+  surface: { borderRadius: radius.lg, padding: space.lg },
+  surfaceBorder: { borderWidth: 1, borderColor: colors.line },
+  tag: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 5 },
   tagText: { fontFamily: fonts.sansSemi, fontSize: 12, letterSpacing: 0.2 },
   back: { flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start', paddingVertical: 8 },
   backLabel: { fontFamily: fonts.sansMedium, fontSize: 14, color: colors.ink },
-  note: { flexDirection: 'row', gap: 14, paddingVertical: 4 },
-  monogram: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.forest, alignItems: 'center', justifyContent: 'center' },
-  monogramText: { fontFamily: fonts.display, fontSize: 19, lineHeight: 22, color: colors.onDark },
-  noteAction: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.forest },
-  sectionAction: { fontFamily: fonts.sansSemi, fontSize: 13, color: colors.forest },
+  note: { flexDirection: 'row', gap: 12, padding: 14, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
+  noteName: { fontFamily: fonts.sansSemi, fontSize: 13, color: colors.ink },
+  online: { position: 'absolute', right: 0, bottom: 0, backgroundColor: '#3BD671', borderWidth: 2, borderColor: colors.surface },
+  noteAction: { fontFamily: fonts.sansSemi, fontSize: 14, color: colors.accent },
+  sectionAction: { fontFamily: fonts.sansSemi, fontSize: 13, color: colors.accent },
 });

@@ -23,7 +23,7 @@ export default function AchievementScreen() {
 
   return (
     <Celebration icon="seal">
-      <T variant="label" style={{ color: colors.brassSoft }}>Estación {level.id} completada</T>
+      <T variant="label" style={{ color: colors.warmSoft }}>Estación {level.id} completada</T>
       <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.75}>
         {level.achievement}
       </Text>

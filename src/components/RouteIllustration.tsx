@@ -54,11 +54,11 @@ export function RouteIllustration({ height }: { height: number }) {
         <>
           <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
             {contours(width, height).map((d, i) => (
-              <Path key={i} d={d} stroke="rgba(244,241,233,0.07)" strokeWidth={1} fill="none" />
+              <Path key={i} d={d} stroke="rgba(255,255,255,0.07)" strokeWidth={1} fill="none" />
             ))}
             <Path
               d={curve(pts)}
-              stroke="rgba(244,241,233,0.55)"
+              stroke="rgba(255,255,255,0.55)"
               strokeWidth={1.5}
               fill="none"
               strokeLinecap="round"
@@ -72,7 +72,7 @@ export function RouteIllustration({ height }: { height: number }) {
             return (
               <View key={i} style={[styles.marker, { left: p.x - 18, top: p.y - 18, opacity: reveal, transform: [{ scale: 0.85 + 0.15 * reveal }] }]}>
                 <View style={[styles.dot, i === 0 && styles.dotFirst]}>
-                  <Icon name={LEVELS[i].icon} size={17} color={i === 0 ? colors.forestDeep : colors.onDark} weight="light" />
+                  <Icon name={LEVELS[i].icon} size={17} color={colors.onDark} weight="light" />
                 </View>
               </View>
             );
@@ -84,17 +84,17 @@ export function RouteIllustration({ height }: { height: number }) {
 }
 
 const styles = StyleSheet.create({
-  canvas: { backgroundColor: colors.forestDeep, overflow: 'hidden' },
+  canvas: { backgroundColor: colors.navy, overflow: 'hidden' },
   marker: { position: 'absolute' },
   dot: {
     width: 36,
     height: 36,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(244,241,233,0.35)',
-    backgroundColor: colors.forestDeep,
+    borderColor: 'rgba(255,255,255,0.35)',
+    backgroundColor: colors.navy,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dotFirst: { backgroundColor: colors.brassSoft, borderColor: colors.brassSoft },
+  dotFirst: { backgroundColor: colors.accentBright, borderColor: colors.accentBright },
 });
